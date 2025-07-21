@@ -43,6 +43,12 @@ fun App() {
                             }
                             archive.use {
                                 tip = "Current file: ${kitFile.name}, itemCount: ${it.numberOfItems}"
+                                val simpleArchive = it.simpleInterface
+                                simpleArchive.archiveItems.joinToString("\n", transform = {
+                                    "${it.path}\t${it.size}"
+                                }).let {
+                                    tip += "\n" + it
+                                }
                             }
                         }
 
