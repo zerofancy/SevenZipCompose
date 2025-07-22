@@ -29,7 +29,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            implementation("net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01")
+            implementation(libs.sevenzipjbinding)
 
 //            val os = org.gradle.internal.os.OperatingSystem.current()
 //            when {
@@ -40,11 +40,11 @@ kotlin {
 
             // Use a patched version of sevenzipjbinding-all-platforms with support for Apple silicon
             // See https://github.com/mucommander/mucommander/pull/1237
-            implementation("com.mucommander:sevenzipjbinding-all-platforms:16.02-2.01")
+            implementation(libs.sevenzipjbinding.all.platforms)
             // Enables FileKit dialogs without Compose dependencies
-            implementation("io.github.vinceglb:filekit-dialogs:0.10.0-beta04")
+            implementation(libs.filekit.dialogs)
             // Enables FileKit dialogs with Composable utilities
-            implementation("io.github.vinceglb:filekit-dialogs-compose:0.10.0-beta04")
+            implementation(libs.filekit.dialogs.compose)
         }
     }
 }
