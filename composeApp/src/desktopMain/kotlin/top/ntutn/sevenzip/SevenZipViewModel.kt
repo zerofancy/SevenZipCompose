@@ -6,13 +6,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import java.io.File
 import java.io.RandomAccessFile
 
-class SevenZipViewModel: ViewModel() {
+class SevenZipViewModel : ViewModel() {
+    private var archive: IInArchive? = null
     private val _tip = MutableStateFlow("")
     val tip: StateFlow<String> get() = _tip
 
@@ -23,17 +25,30 @@ class SevenZipViewModel: ViewModel() {
             } catch (e: SevenZipException) {
                 e.printStackTrace()
                 return@launch
+            }.also {
+                closeCurrentArchive()
+                this@SevenZipViewModel.archive = it
             }
-            archive.use {
-                var tip = "Current file: ${file}, itemCount: ${it.numberOfItems}"
-                val simpleArchive = it.simpleInterface
-                simpleArchive.archiveItems.joinToString("\n", transform = {
-                    "${it.path}\t${it.size}"
-                }).let {
-                    tip += "\n" + it
-                }
-                _tip.value = tip
+            var tip = "Current file: ${file}, itemCount: ${archive.numberOfItems}"
+            val simpleArchive = archive.simpleInterface
+            simpleArchive.archiveItems.joinToString("\n", transform = {
+                "${it.path}\t${it.size}"
+            }).let {
+                tip += "\n" + it
             }
+            simpleArchive.close()
+            _tip.value = tip
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        closeCurrentArchive()
+    }
+
+    private fun closeCurrentArchive() {
+        val closingArchive = archive
+        archive = null
+        closingArchive?.close()
     }
 }
