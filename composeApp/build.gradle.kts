@@ -30,12 +30,17 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation("net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01")
-            val os = org.gradle.internal.os.OperatingSystem.current()
-            when {
-                os.isWindows -> implementation("net.sf.sevenzipjbinding:sevenzipjbinding-all-windows:16.02-2.01")
-                os.isLinux -> implementation("net.sf.sevenzipjbinding:sevenzipjbinding-all-linux:16.02-2.01")
-                else -> implementation("net.sf.sevenzipjbinding:sevenzipjbinding-all-mac:16.02-2.01")
-            }
+
+//            val os = org.gradle.internal.os.OperatingSystem.current()
+//            when {
+//                os.isWindows -> implementation("net.sf.sevenzipjbinding:sevenzipjbinding-all-windows:16.02-2.01")
+//                os.isLinux -> implementation("net.sf.sevenzipjbinding:sevenzipjbinding-all-linux:16.02-2.01")
+//                else -> implementation("net.sf.sevenzipjbinding:sevenzipjbinding-all-mac:16.02-2.01")
+//            }
+
+            // Use a patched version of sevenzipjbinding-all-platforms with support for Apple silicon
+            // See https://github.com/mucommander/mucommander/pull/1237
+            implementation("com.mucommander:sevenzipjbinding-all-platforms:16.02-2.01")
             // Enables FileKit dialogs without Compose dependencies
             implementation("io.github.vinceglb:filekit-dialogs:0.10.0-beta04")
             // Enables FileKit dialogs with Composable utilities

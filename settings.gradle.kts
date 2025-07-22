@@ -25,6 +25,9 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven {
+            url = uri("https://www.mucommander.com/maven/")
+        }
     }
 }
 
