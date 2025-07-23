@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.SevenZip
@@ -43,7 +44,9 @@ class SevenZipViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        closeCurrentArchive()
+        viewModelScope.coroutineContext.job.invokeOnCompletion {
+            closeCurrentArchive()
+        }
     }
 
     private fun closeCurrentArchive() {
