@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.SevenZip
@@ -15,7 +14,8 @@ import java.io.File
 import java.io.RandomAccessFile
 
 class SevenZipViewModel : ViewModel() {
-    private var archive: IInArchive? = null
+    @Volatile
+    private var archive: ReferenceCounted<IInArchive>? = null
     private val _tip = MutableStateFlow("")
     val tip: StateFlow<String> get() = _tip
 
@@ -26,32 +26,35 @@ class SevenZipViewModel : ViewModel() {
             } catch (e: SevenZipException) {
                 e.printStackTrace()
                 return@launch
+            }
+            val closeableArchive = archive.toReferenceCounted {
+                it.close()
             }.also {
-                closeCurrentArchive()
-                this@SevenZipViewModel.archive = it
+                val origin = this@SevenZipViewModel.archive
+                this@SevenZipViewModel.archive = it.clone()
+                origin?.close()
             }
             var tip = "Current file: ${file}, itemCount: ${archive.numberOfItems}"
-            val simpleArchive = archive.simpleInterface
-            simpleArchive.archiveItems.joinToString("\n", transform = {
-                "${it.path}\t${it.size}"
-            }).let {
-                tip += "\n" + it
+            try {
+                val simpleArchive = archive.simpleInterface
+                simpleArchive.archiveItems.joinToString("\n", transform = {
+                    "${it.path}\t${it.size}"
+                }).let {
+                    tip += "\n" + it
+                }
+                simpleArchive.close()
+            } finally {
+                closeableArchive.close()
             }
-            simpleArchive.close()
             _tip.value = tip
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        viewModelScope.coroutineContext.job.invokeOnCompletion {
-            closeCurrentArchive()
+        archive?.let {
+            archive = null
+            it.close()
         }
-    }
-
-    private fun closeCurrentArchive() {
-        val closingArchive = archive
-        archive = null
-        closingArchive?.close()
     }
 }
