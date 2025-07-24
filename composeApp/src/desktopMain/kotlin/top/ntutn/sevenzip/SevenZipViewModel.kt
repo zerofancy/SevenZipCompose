@@ -12,10 +12,12 @@ import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import java.io.File
 import java.io.RandomAccessFile
+import kotlin.concurrent.atomics.AtomicReference
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
+@OptIn(ExperimentalAtomicApi::class)
 class SevenZipViewModel : ViewModel() {
-    @Volatile
-    private var archive: ReferenceCounted<IInArchive>? = null
+    private val archiveRef = AtomicReference<ReferenceCounted<IInArchive>?>(null)
     private val _tip = MutableStateFlow("")
     val tip: StateFlow<String> get() = _tip
 
@@ -30,9 +32,8 @@ class SevenZipViewModel : ViewModel() {
             val closeableArchive = archive.toReferenceCounted {
                 it.close()
             }.also {
-                val origin = this@SevenZipViewModel.archive
-                this@SevenZipViewModel.archive = it.clone()
-                origin?.close()
+                val old = this@SevenZipViewModel.archiveRef.exchange(it.clone())
+                old?.close()
             }
             var tip = "Current file: ${file}, itemCount: ${archive.numberOfItems}"
             try {
@@ -52,9 +53,6 @@ class SevenZipViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        archive?.let {
-            archive = null
-            it.close()
-        }
+        archiveRef.exchange(null)?.close()
     }
 }

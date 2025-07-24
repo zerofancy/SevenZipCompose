@@ -2,30 +2,31 @@ package top.ntutn.sevenzip
 
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.jvm.Throws
 
 /**
  * 优化后的引用计数实现，解决线程可见性问题
  */
+@OptIn(ExperimentalAtomicApi::class)
 class ReferenceCounted<T : Closeable>(
     private val resource: T,
     private val onFinalRelease: ((T) -> Unit)? = null
 ) : Closeable {
     private val refCount = AtomicInteger(1)
-    // 添加volatile修饰符，确保多线程可见性
-    @Volatile
-    private var isClosed = false
+    private val isClosed = AtomicBoolean(false)
 
     @Throws(IllegalStateException::class)
     fun get(): T {
-        check(!isClosed) { "资源已被释放，无法获取" }
+        check(!isClosed.load()) { "资源已被释放，无法获取" }
         return resource
     }
 
     @Throws(IllegalStateException::class)
     fun clone(): ReferenceCounted<T> {
         // 先检查状态再增加计数，减少锁竞争
-        if (isClosed) {
+        if (isClosed.load()) {
             throw IllegalStateException("无法克隆已释放的资源")
         }
         // 使用循环确保计数增加成功（防止并发情况下的竞态条件）
@@ -42,26 +43,20 @@ class ReferenceCounted<T : Closeable>(
     }
 
     override fun close() {
-        if (isClosed) return
+        if (isClosed.load()) return
 
         val currentCount = refCount.decrementAndGet()
         if (currentCount == 0) {
-            // 双重检查锁定（Double-Checked Locking）
-            if (!isClosed) {
-                synchronized(this) {
-                    if (!isClosed) {
-                        resource.close()
-                        onFinalRelease?.invoke(resource)
-                        isClosed = true
-                    }
-                }
+            if (!isClosed.compareAndSet(expectedValue = false, newValue = true)) {
+                resource.close()
+                onFinalRelease?.invoke(resource)
             }
         } else if (currentCount < 0) {
             throw IllegalStateException("引用计数异常，可能重复释放资源")
         }
     }
 
-    fun isClosed(): Boolean = isClosed
+    fun isClosed(): Boolean = isClosed.load()
 
     fun getRefCount(): Int = refCount.get()
 }
