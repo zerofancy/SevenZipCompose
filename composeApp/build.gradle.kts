@@ -46,6 +46,8 @@ kotlin {
             implementation(libs.filekit.dialogs)
             // Enables FileKit dialogs with Composable utilities
             implementation(libs.filekit.dialogs.compose)
+            implementation(libs.jna)
+            implementation(libs.jna.platform)
         }
     }
 }

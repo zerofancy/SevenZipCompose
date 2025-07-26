@@ -7,6 +7,7 @@ kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
 sevenzipjbinding = "16.02-2.01"
 filekit = "0.10.0-beta04"
+jna="5.17.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -20,6 +21,8 @@ sevenzipjbinding = { module = "net.sf.sevenzipjbinding:sevenzipjbinding", versio
 sevenzipjbinding-all-platforms = { module = "com.mucommander:sevenzipjbinding-all-platforms", version.ref = "sevenzipjbinding" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }

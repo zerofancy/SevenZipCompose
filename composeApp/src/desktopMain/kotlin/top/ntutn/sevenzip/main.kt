@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import io.github.vinceglb.filekit.FileKit
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException
 
@@ -29,6 +30,7 @@ fun main() {
         e.printStackTrace()
         error(e)
     }
+    FileKit.init("SevenZip")
     application {
         var settingOpened by remember { mutableStateOf(false) }
         var customDensity by remember { mutableStateOf(Density(density = 1f, fontScale = 1f)) }
