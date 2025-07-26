@@ -23,7 +23,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
-fun App() {
+fun App(onOpenSetting: () -> Unit = {}) {
     MaterialTheme {
         Column {
             val viewModel = viewModel(SevenZipViewModel::class)
@@ -38,6 +38,9 @@ fun App() {
                     }
                 }) {
                     Text("Open")
+                }
+                Button(onClick = onOpenSetting) {
+                    Text("Setting")
                 }
             }
             // content
