@@ -3,6 +3,8 @@ package top.ntutn.sevenzip
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,7 +24,6 @@ fun App() {
     MaterialTheme {
         Column {
             val viewModel = viewModel(SevenZipViewModel::class)
-            val tip by viewModel.tip.collectAsState()
 
             // toolbar
             Row {
@@ -38,7 +39,33 @@ fun App() {
             }
             // content
             Box {
-                Text(tip)
+                val currentNode by viewModel.browsingNode.collectAsState()
+                Column {
+                    val node = currentNode
+                    if (node == null) {
+                        Text("No open file now")
+                    } else {
+                        Button(onClick = {
+                            viewModel.moveBack()
+                        }) {
+                            Text("Back")
+                        }
+                        LazyColumn {
+                            items(node.children) {
+                                Row {
+                                    Text(it.name)
+                                    if (it.isDir) {
+                                        Button(onClick = {
+                                            viewModel.enterFolder(it)
+                                        }) {
+                                            Text("Browse")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -19,8 +19,10 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 @OptIn(ExperimentalAtomicApi::class)
 class SevenZipViewModel : ViewModel() {
     private val archiveRef = AtomicReference<ReferenceCounted<IInArchive>?>(null)
-    private val _tip = MutableStateFlow("")
-    val tip: StateFlow<String> get() = _tip
+
+    private var archiveTree = ArchiveNode()
+    private val _browsingNode = MutableStateFlow<ArchiveNode?>(null)
+    val browsingNode: StateFlow<ArchiveNode?> get() = _browsingNode
 
     fun openArchive(file: File) = viewModelScope.launch(Dispatchers.Default) {
         RandomAccessFile(file, "r").use { file ->
@@ -62,12 +64,27 @@ class SevenZipViewModel : ViewModel() {
                     currentPtr?.index = i
                 }
                 print(archiveTree.printTree())
+                this@SevenZipViewModel.archiveTree = archiveTree
+                this@SevenZipViewModel._browsingNode.value = archiveTree
             }
+        }
+    }
+
+    fun enterFolder(node: ArchiveNode) {
+        _browsingNode.value = node
+    }
+
+    fun moveBack() {
+        val parentNode = _browsingNode.value?.parent
+        if (parentNode != null) {
+            _browsingNode.value = parentNode
         }
     }
 
     override fun onCleared() {
         super.onCleared()
+        archiveTree = ArchiveNode()
+        _browsingNode.value = null
         archiveRef.exchange(null)?.close()
     }
 }
