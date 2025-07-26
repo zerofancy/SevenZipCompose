@@ -64,3 +64,11 @@ class ReferenceCounted<T : Closeable>(
 fun <T : Closeable> T.toReferenceCounted(onFinalRelease: ((T) -> Unit)? = null): ReferenceCounted<T> {
     return ReferenceCounted(this, onFinalRelease)
 }
+
+fun <T : Closeable> ReferenceCounted<T>.rememberClose(block: (T) -> Unit) {
+    try {
+        block(get())
+    } finally {
+        close()
+    }
+}

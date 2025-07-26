@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import net.sf.sevenzipjbinding.IInArchive
+import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
@@ -35,19 +36,33 @@ class SevenZipViewModel : ViewModel() {
                 val old = this@SevenZipViewModel.archiveRef.exchange(it.clone())
                 old?.close()
             }
-            var tip = "Current file: ${file}, itemCount: ${archive.numberOfItems}"
-            try {
-                val simpleArchive = archive.simpleInterface
-                simpleArchive.archiveItems.joinToString("\n", transform = {
-                    "${it.path}\t${it.size}"
-                }).let {
-                    tip += "\n" + it
+            closeableArchive.rememberClose { archive ->
+                val itemCount = archive.numberOfItems
+                val archiveTree: ArchiveNode = ArchiveNode().also {
+                    it.name = "ROOT"
                 }
-                simpleArchive.close()
-            } finally {
-                closeableArchive.close()
+                // 构造归档文件树
+                for (i in 0 until itemCount) {
+                    val path = archive.getProperty(i, PropID.PATH) as? String ?: ""
+                    val isDir = archive.getProperty(i, PropID.IS_FOLDER) as? Boolean ?: false
+                    val names = path.split(File.separator)
+                    var parentPtr = archiveTree
+                    var currentPtr: ArchiveNode? = null
+                    for(j in names.indices) {
+                        val isCurrentNodeDir = j < names.size - 1 || isDir // 只要不是最后一级，那肯定是文件夹
+                        currentPtr = parentPtr.children.find { it.isDir == isCurrentNodeDir && it.name == names[j] }
+                        currentPtr = currentPtr ?: ArchiveNode().also {
+                            it.name = names[j]
+                            it.isDir = isCurrentNodeDir
+                            it.parent = parentPtr
+                            parentPtr.children.add(it)
+                        }
+                        parentPtr = currentPtr
+                    }
+                    currentPtr?.index = i
+                }
+                print(archiveTree.printTree())
             }
-            _tip.value = tip
         }
     }
 
