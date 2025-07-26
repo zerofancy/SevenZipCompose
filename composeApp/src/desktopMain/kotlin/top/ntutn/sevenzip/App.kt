@@ -1,5 +1,6 @@
 package top.ntutn.sevenzip
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,12 +11,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -51,12 +54,19 @@ fun App() {
                             Text("Back")
                         }
                         LazyColumn {
-                            items(node.children) {
+                            items(node.children) { childrenNode ->
                                 Row {
-                                    Text(it.name)
-                                    if (it.isDir) {
+                                    val resource by derivedStateOf {
+                                        FileIconUtils.getIconPath(childrenNode.isDir, childrenNode.name)
+                                    }
+                                    Image(
+                                        painter = painterResource(resource),
+                                        contentDescription = null,
+                                    )
+                                    Text(childrenNode.name)
+                                    if (childrenNode.isDir) {
                                         Button(onClick = {
-                                            viewModel.enterFolder(it)
+                                            viewModel.enterFolder(childrenNode)
                                         }) {
                                             Text("Browse")
                                         }
