@@ -49,10 +49,16 @@ fun App(onOpenSetting: () -> Unit = {}) {
     MaterialTheme {
         Column {
             val viewModel = viewModel(SevenZipViewModel::class)
+            val currentNode by viewModel.browsingNode.collectAsState()
 
             // toolbar
             Row {
                 val scope = rememberCoroutineScope()
+                Button(onClick = {
+                    viewModel.moveBack()
+                }, enabled = currentNode?.parent != null) {
+                    Text("Back")
+                }
                 Button(onClick = {
                     scope.launch {
                         val kitFile = FileKit.openFilePicker()?.file ?: return@launch
@@ -67,17 +73,11 @@ fun App(onOpenSetting: () -> Unit = {}) {
             }
             // content
             Box {
-                val currentNode by viewModel.browsingNode.collectAsState()
                 Column {
                     val node = currentNode
                     if (node == null) {
                         Text("No open file now")
                     } else {
-                        Button(onClick = {
-                            viewModel.moveBack()
-                        }) {
-                            Text("Back")
-                        }
                         LazyColumn {
                             items(node.children) { childrenNode ->
                                 Row {
