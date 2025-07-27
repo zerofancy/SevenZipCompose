@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toPainter
@@ -38,6 +39,7 @@ import org.jetbrains.skiko.hostOs
 import top.ntutn.sevenzip.SevenZipViewModel
 import top.ntutn.sevenzip.util.FileIconFetcher
 import top.ntutn.sevenzip.util.FileIconUtils
+import top.ntutn.sevenzip.util.LinuxFileIconProvider
 import java.io.File
 
 
@@ -103,6 +105,23 @@ fun App(onOpenSetting: () -> Unit = {}) {
                                                 )
                                                 fileIcon?.let {
                                                     iconPainter = it.toPainter()
+                                                }
+                                            }
+                                        }
+                                    } else if(hostOs.isLinux) {
+                                        LaunchedEffect(childrenNode) {
+                                            withContext(Dispatchers.IO) {
+                                                val extension = childrenNode.name.split(".").last()
+                                                val dummyFile = if (childrenNode.isDir) {
+                                                    FileKit.cacheDir.file
+                                                } else if (extension.isBlank()) {
+                                                    File(FileKit.cacheDir.file, "dummy")
+                                                } else {
+                                                    File(FileKit.cacheDir.file, "dummy.${extension}")
+                                                }
+                                                val icon = LinuxFileIconProvider.getFileIcon(dummyFile.canonicalPath)
+                                                icon?.let {
+                                                    iconPainter = BitmapPainter(it)
                                                 }
                                             }
                                         }
