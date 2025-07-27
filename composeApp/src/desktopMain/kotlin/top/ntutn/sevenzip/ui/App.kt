@@ -1,4 +1,4 @@
-package top.ntutn.sevenzip
+package top.ntutn.sevenzip.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -33,6 +33,9 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.skiko.hostOs
+import top.ntutn.sevenzip.SevenZipViewModel
+import top.ntutn.sevenzip.util.FileIconFetcher
+import top.ntutn.sevenzip.util.FileIconUtils
 import java.io.File
 
 

@@ -1,4 +1,4 @@
-package top.ntutn.sevenzip
+package top.ntutn.sevenzip.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

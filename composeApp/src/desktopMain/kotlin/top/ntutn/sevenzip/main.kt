@@ -14,6 +14,8 @@ import androidx.compose.ui.window.application
 import io.github.vinceglb.filekit.FileKit
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException
+import top.ntutn.sevenzip.ui.App
+import top.ntutn.sevenzip.ui.SettingPage
 
 
 @OptIn(ExperimentalMaterial3Api::class)

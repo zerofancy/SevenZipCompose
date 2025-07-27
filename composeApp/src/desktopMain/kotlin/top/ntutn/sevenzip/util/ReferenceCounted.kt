@@ -1,4 +1,4 @@
-package top.ntutn.sevenzip
+package top.ntutn.sevenzip.util
 
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicInteger

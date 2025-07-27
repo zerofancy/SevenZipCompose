@@ -1,4 +1,4 @@
-package top.ntutn.sevenzip
+package top.ntutn.sevenzip.util
 
 import org.jetbrains.compose.resources.DrawableResource
 import sevenzip.composeapp.generated.resources.Res

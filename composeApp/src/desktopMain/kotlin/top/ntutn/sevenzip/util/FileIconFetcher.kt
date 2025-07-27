@@ -1,4 +1,4 @@
-package top.ntutn.sevenzip
+package top.ntutn.sevenzip.util
 
 import com.sun.jna.Memory
 import com.sun.jna.Native

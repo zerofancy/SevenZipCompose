@@ -11,6 +11,9 @@ import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import top.ntutn.sevenzip.util.ReferenceCounted
+import top.ntutn.sevenzip.util.rememberClose
+import top.ntutn.sevenzip.util.toReferenceCounted
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.concurrent.atomics.AtomicReference
