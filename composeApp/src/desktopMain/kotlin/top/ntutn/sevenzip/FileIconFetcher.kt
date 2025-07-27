@@ -5,7 +5,6 @@ import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import com.sun.jna.platform.win32.GDI32
-import com.sun.jna.platform.win32.WinDef.HBITMAP
 import com.sun.jna.platform.win32.WinDef.HDC
 import com.sun.jna.platform.win32.WinDef.HICON
 import com.sun.jna.platform.win32.WinGDI
@@ -14,9 +13,6 @@ import com.sun.jna.platform.win32.WinGDI.BITMAPINFO
 import com.sun.jna.win32.StdCallLibrary
 import com.sun.jna.win32.W32APIOptions
 import java.awt.image.BufferedImage
-import java.util.Optional
-import java.util.function.Consumer
-
 
 // 定义结构体对齐常量
 private const val STRUCTURE_ALIGN_BYTE = 1
@@ -57,7 +53,6 @@ interface User32 : StdCallLibrary {
     fun DestroyIcon(hIcon: HICON?): Boolean
     fun GetDC(hwnd: Pointer?): Pointer
     fun ReleaseDC(hwnd: Pointer?, hdc: Pointer): Int
-    fun DrawIcon(hdc: Pointer, x: Int, y: Int, hIcon: HICON?): Boolean
     fun GetIconInfo(hIcon: HICON?, pIconInfo: WinGDI.ICONINFO): Boolean
 
     companion object {
@@ -103,16 +98,19 @@ object FileIconFetcher {
     }
 
     private fun toImage(hicon: HICON?): BufferedImage? {
-        var bitmapHandle: HBITMAP? = null
+        var deviceContext: Pointer? = null
         val user32 = User32.INSTANCE
         val gdi32 = GDI32.INSTANCE
+        val info = WinGDI.ICONINFO()
 
         try {
-            val info = WinGDI.ICONINFO()
             if (!user32.GetIconInfo(hicon, info)) return null
 
-            info.read()
-            bitmapHandle = Optional.ofNullable<HBITMAP?>(info.hbmColor).orElse(info.hbmMask)
+            info.read() // 确保结构体数据从原生内存同步到 Java 对象
+            val bitmapHandle = info.hbmColor ?: info.hbmMask
+            if (bitmapHandle == null) {
+                return null
+            }
 
             val bitmap = BITMAP()
             if (gdi32.GetObject(bitmapHandle, bitmap.size(), bitmap.getPointer()) > 0) {
@@ -121,7 +119,7 @@ object FileIconFetcher {
                 val width = bitmap.bmWidth.toInt()
                 val height = bitmap.bmHeight.toInt()
 
-                val deviceContext: Pointer = user32.GetDC(null)
+                deviceContext = user32.GetDC(null)
                 val bitmapInfo = BITMAPINFO()
 
                 bitmapInfo.bmiHeader.biSize = bitmapInfo.bmiHeader.size()
@@ -157,9 +155,10 @@ object FileIconFetcher {
                 return image
             }
         } finally {
-            gdi32.DeleteObject(hicon)
-            Optional.ofNullable<HBITMAP?>(bitmapHandle)
-                .ifPresent(Consumer { hObject: HBITMAP? -> gdi32.DeleteObject(hObject) })
+            deviceContext?.let { user32.ReleaseDC(null, it) }
+            user32.DestroyIcon(hicon)
+            info.hbmMask?.let(gdi32::DeleteObject)
+            info.hbmColor?.let(gdi32::DeleteObject)
         }
 
         return null
