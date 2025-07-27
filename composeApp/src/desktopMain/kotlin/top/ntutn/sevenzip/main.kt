@@ -14,6 +14,9 @@ import androidx.compose.ui.window.application
 import io.github.vinceglb.filekit.FileKit
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException
+import org.jetbrains.compose.resources.painterResource
+import sevenzip.composeapp.generated.resources.Res
+import sevenzip.composeapp.generated.resources.icon
 import top.ntutn.sevenzip.ui.App
 import top.ntutn.sevenzip.ui.SettingPage
 
@@ -34,6 +37,7 @@ fun main() {
         Window(
             onCloseRequest = ::exitApplication,
             title = "SevenZip",
+            icon = painterResource(Res.drawable.icon)
         ) {
             CompositionLocalProvider(
                 LocalDensity provides customDensity
