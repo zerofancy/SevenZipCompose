@@ -79,52 +79,40 @@ fun ContentArea(
     }
 }
 
+private val iconCache = mutableMapOf<File, Painter?>()
+
 @Composable
 private fun NodeIconPainter(node: ArchiveNode, onPainterLoaded: (Painter?) -> Unit) {
     val callback by rememberUpdatedState(onPainterLoaded)
     if (hostOs.isWindows) {
         LaunchedEffect(node) {
             withContext(Dispatchers.IO) {
-                val extension = node.name.split(".").last()
-                val dummyFile = if (node.isDir) {
-                    FileKit.cacheDir.file
-                } else if (extension.isBlank()) {
-                    File(FileKit.cacheDir.file, "dummy")
-                } else {
-                    File(FileKit.cacheDir.file, "dummy.${extension}")
+                val dummyFile = obtainDummyFile(node)
+                val painter = loadIconWithCache(dummyFile) {
+                    val fileIcon = FileIconFetcher.getFileIcon(
+                        path = dummyFile.canonicalPath,
+                        isDirectory = node.isDir,
+                        isLarge = true
+                    )
+                    fileIcon?.toPainter()
                 }
-                if (!dummyFile.exists()) {
-                    dummyFile.createNewFile()
+                withContext(Dispatchers.Main) {
+                    callback(painter)
                 }
-                val fileIcon = FileIconFetcher.getFileIcon(
-                    path = dummyFile.canonicalPath,
-                    isDirectory = node.isDir,
-                    isLarge = true
-                )
-                callback(fileIcon?.toPainter())
             }
         }
     } else if (hostOs.isLinux) {
         LaunchedEffect(node) {
-            val extension = node.name.split(".").last()
-            val dummyFile = if (node.isDir) {
-                FileKit.cacheDir.file
-            } else if (extension.isBlank()) {
-                File(FileKit.cacheDir.file, "dummy")
-            } else {
-                File(FileKit.cacheDir.file, "dummy.${extension}")
-            }
-            if (!dummyFile.exists()) {
-                withContext(Dispatchers.IO) {
-                    dummyFile.createNewFile()
+            val dummyFile = obtainDummyFile(node)
+            val painter = loadIconWithCache(dummyFile) {
+                withContext(Dispatchers.Main) {
+                    val icon = LinuxFileIconProvider.getFileIcon(dummyFile.canonicalPath)
+                    icon?.let { image -> BitmapPainter(image) }
                 }
             }
-            val icon = withContext(Dispatchers.Main) {
-                LinuxFileIconProvider.getFileIcon(dummyFile.canonicalPath)
+            withContext(Dispatchers.Main) {
+                callback(painter)
             }
-            callback(icon?.let {
-                BitmapPainter(it)
-            })
         }
     } else {
         val resource by derivedStateOf {
@@ -132,4 +120,34 @@ private fun NodeIconPainter(node: ArchiveNode, onPainterLoaded: (Painter?) -> Un
         }
         callback(painterResource(resource))
     }
+}
+
+private suspend fun obtainDummyFile(node: ArchiveNode): File {
+    val extension = node.name.split(".").last()
+    val dummyFile = if (node.isDir) {
+        FileKit.cacheDir.file
+    } else if (extension.isBlank()) {
+        File(FileKit.cacheDir.file, "dummy")
+    } else {
+        File(FileKit.cacheDir.file, "dummy.${extension}")
+    }
+    if (!dummyFile.exists()) {
+        withContext(Dispatchers.IO) {
+            dummyFile.createNewFile()
+        }
+    }
+    return dummyFile
+}
+
+private suspend fun loadIconWithCache(dummyFile: File, realLoader: suspend (File) -> Painter?): Painter? {
+    withContext(Dispatchers.Main) {
+        if (iconCache.contains(dummyFile)) {
+            return@withContext iconCache[dummyFile]
+        }
+    }
+    val painter = realLoader(dummyFile)
+    withContext(Dispatchers.Main) {
+        iconCache[dummyFile] = painter
+    }
+    return painter
 }
