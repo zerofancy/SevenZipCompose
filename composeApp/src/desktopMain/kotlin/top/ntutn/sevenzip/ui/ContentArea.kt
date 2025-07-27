@@ -14,6 +14,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,55 +53,12 @@ fun ContentArea(
                                 ColorPainter(Color.Companion.LightGray)
                             )
                         }
-                        if (hostOs.isWindows) {
-                            LaunchedEffect(childrenNode) {
-                                // 在后台线程获取图标
-                                withContext(Dispatchers.IO) {
-                                    val extension = childrenNode.name.split(".").last()
-                                    val dummyFile = if (childrenNode.isDir) {
-                                        FileKit.cacheDir.file
-                                    } else if (extension.isBlank()) {
-                                        File(FileKit.cacheDir.file, "dummy")
-                                    } else {
-                                        File(FileKit.cacheDir.file, "dummy.${extension}")
-                                    }
-                                    if (!dummyFile.exists()) {
-                                        dummyFile.createNewFile()
-                                    }
-                                    val fileIcon = FileIconFetcher.getFileIcon(
-                                        path = dummyFile.canonicalPath,
-                                        isDirectory = childrenNode.isDir,
-                                        isLarge = true
-                                    )
-                                    fileIcon?.let {
-                                        iconPainter = it.toPainter()
-                                    }
-                                }
+                        NodeIconPainter(childrenNode) {
+                            if (it != null) {
+                                iconPainter = it
                             }
-                        } else if (hostOs.isLinux) {
-                            LaunchedEffect(childrenNode) {
-                                withContext(Dispatchers.IO) {
-                                    val extension = childrenNode.name.split(".").last()
-                                    val dummyFile = if (childrenNode.isDir) {
-                                        FileKit.cacheDir.file
-                                    } else if (extension.isBlank()) {
-                                        File(FileKit.cacheDir.file, "dummy")
-                                    } else {
-                                        File(FileKit.cacheDir.file, "dummy.${extension}")
-                                    }
-                                    val icon =
-                                        LinuxFileIconProvider.getFileIcon(dummyFile.canonicalPath)
-                                    icon?.let {
-                                        iconPainter = BitmapPainter(it)
-                                    }
-                                }
-                            }
-                        } else {
-                            val resource by derivedStateOf {
-                                FileIconUtils.getIconPath(childrenNode.isDir, childrenNode.name)
-                            }
-                            iconPainter = painterResource(resource)
                         }
+
                         Image(
                             painter = iconPainter,
                             contentDescription = null,
@@ -118,5 +76,60 @@ fun ContentArea(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NodeIconPainter(node: ArchiveNode, onPainterLoaded: (Painter?) -> Unit) {
+    val callback by rememberUpdatedState(onPainterLoaded)
+    if (hostOs.isWindows) {
+        LaunchedEffect(node) {
+            withContext(Dispatchers.IO) {
+                val extension = node.name.split(".").last()
+                val dummyFile = if (node.isDir) {
+                    FileKit.cacheDir.file
+                } else if (extension.isBlank()) {
+                    File(FileKit.cacheDir.file, "dummy")
+                } else {
+                    File(FileKit.cacheDir.file, "dummy.${extension}")
+                }
+                if (!dummyFile.exists()) {
+                    dummyFile.createNewFile()
+                }
+                val fileIcon = FileIconFetcher.getFileIcon(
+                    path = dummyFile.canonicalPath,
+                    isDirectory = node.isDir,
+                    isLarge = true
+                )
+                callback(fileIcon?.toPainter())
+            }
+        }
+    } else if (hostOs.isLinux) {
+        LaunchedEffect(node) {
+            val extension = node.name.split(".").last()
+            val dummyFile = if (node.isDir) {
+                FileKit.cacheDir.file
+            } else if (extension.isBlank()) {
+                File(FileKit.cacheDir.file, "dummy")
+            } else {
+                File(FileKit.cacheDir.file, "dummy.${extension}")
+            }
+            if (!dummyFile.exists()) {
+                withContext(Dispatchers.IO) {
+                    dummyFile.createNewFile()
+                }
+            }
+            val icon = withContext(Dispatchers.Main) {
+                LinuxFileIconProvider.getFileIcon(dummyFile.canonicalPath)
+            }
+            callback(icon?.let {
+                BitmapPainter(it)
+            })
+        }
+    } else {
+        val resource by derivedStateOf {
+            FileIconUtils.getIconPath(node.isDir, node.name)
+        }
+        callback(painterResource(resource))
     }
 }

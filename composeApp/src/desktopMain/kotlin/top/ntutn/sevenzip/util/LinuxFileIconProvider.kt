@@ -6,12 +6,8 @@ import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.PointerByReference
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.withContext
 import java.awt.image.BufferedImage
 import java.io.File
-import java.util.concurrent.Executors
 
 // GTK库的JNA接口定义
 interface GtkLibrary : Library {
@@ -47,13 +43,6 @@ interface GtkLibrary : Library {
 }
 
 object LinuxFileIconProvider {
-    // 单线程调度器
-    private val gtkDispatcher: CoroutineDispatcher by lazy {
-        Executors.newSingleThreadExecutor {
-            Thread(it, "gtk-icon-thread").apply { isDaemon = true }
-        }.asCoroutineDispatcher()
-    }
-
     // 初始化GTK库
     private val gtk: GtkLibrary by lazy {
         Native.load("gtk-3", GtkLibrary::class.java).apply {
@@ -77,35 +66,35 @@ object LinuxFileIconProvider {
     /**
      * 以suspend function形式提供的图标获取方法
      */
-    suspend fun getFileIcon(filePath: String, size: Int = 48): ImageBitmap? = withContext(gtkDispatcher) {
+    fun getFileIcon(filePath: String, size: Int = 48): ImageBitmap?  {
         try {
             println("Trying to get icon for: $filePath (size: $size)")
             val file = File(filePath)
 
             if (!file.exists()) {
                 println("File does not exist: $filePath")
-                return@withContext getDefaultIconForExtension(file.extension, size)
+                return getDefaultIconForExtension(file.extension, size)
             }
 
             if (file.isDirectory) {
-                return@withContext getDirectoryIcon(size)
+                return getDirectoryIcon(size)
             }
 
             // 先尝试通过文件本身获取图标
             val fileIcon = getIconFromFile(filePath, size)
             if (fileIcon != null) {
                 println("Successfully loaded icon for $filePath")
-                return@withContext fileIcon
+                return fileIcon
             }
 
             // 如果失败，使用扩展名获取默认图标
             val extension = file.extension.takeIf { it.isNotEmpty() } ?: "unknown"
             println("Falling back to extension-based icon for $extension")
-            return@withContext getDefaultIconForExtension(extension, size)
+            return getDefaultIconForExtension(extension, size)
         } catch (e: Exception) {
             println("Error getting file icon: ${e.message}")
             e.printStackTrace()
-            null
+            return null
         }
     }
 
