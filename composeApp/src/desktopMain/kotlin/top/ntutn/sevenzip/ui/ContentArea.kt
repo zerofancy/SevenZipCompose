@@ -139,15 +139,14 @@ private suspend fun obtainDummyFile(node: ArchiveNode): File {
     return dummyFile
 }
 
-private suspend fun loadIconWithCache(dummyFile: File, realLoader: suspend (File) -> Painter?): Painter? {
-    withContext(Dispatchers.Main) {
-        if (iconCache.contains(dummyFile)) {
-            return@withContext iconCache[dummyFile]
-        }
+private suspend fun loadIconWithCache(
+    dummyFile: File,
+    realLoader: suspend (File) -> Painter?
+): Painter? = withContext(Dispatchers.Main) {
+    if (iconCache.contains(dummyFile)) {
+        return@withContext iconCache[dummyFile]
     }
     val painter = realLoader(dummyFile)
-    withContext(Dispatchers.Main) {
-        iconCache[dummyFile] = painter
-    }
-    return painter
+    iconCache[dummyFile] = painter
+    return@withContext painter
 }
