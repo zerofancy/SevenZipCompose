@@ -20,8 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.toPainter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.vinceglb.filekit.FileKit
@@ -77,9 +79,9 @@ fun App(onOpenSetting: () -> Unit = {}) {
                         LazyColumn {
                             items(node.children) { childrenNode ->
                                 Row {
+                                    var iconPainter by remember { mutableStateOf<Painter>(
+                                        ColorPainter(Color.LightGray)) }
                                     if (hostOs.isWindows) {
-                                        var icon by remember { mutableStateOf<ImageBitmap?>(null) }
-
                                         LaunchedEffect(childrenNode) {
                                             // 在后台线程获取图标
                                             withContext(Dispatchers.IO) {
@@ -100,27 +102,21 @@ fun App(onOpenSetting: () -> Unit = {}) {
                                                     isLarge = true
                                                 )
                                                 fileIcon?.let {
-                                                    icon = it.toComposeImageBitmap()
+                                                    iconPainter = it.toPainter()
                                                 }
                                             }
                                         }
-
-                                        icon?.let {
-                                            Image(
-                                                bitmap = it,
-                                                contentDescription = "File icon",
-                                                modifier = Modifier.size(48.dp)
-                                            )
-                                        } ?: Text("Loading icon...")
                                     } else {
                                         val resource by derivedStateOf {
                                             FileIconUtils.getIconPath(childrenNode.isDir, childrenNode.name)
                                         }
-                                        Image(
-                                            painter = painterResource(resource),
-                                            contentDescription = null,
-                                        )
+                                        iconPainter = painterResource(resource)
                                     }
+                                    Image(
+                                        painter = iconPainter,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(48.dp)
+                                    )
                                     Text(childrenNode.name)
                                     if (childrenNode.isDir) {
                                         Button(onClick = {
