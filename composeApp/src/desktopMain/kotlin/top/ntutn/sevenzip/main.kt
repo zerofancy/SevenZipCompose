@@ -1,11 +1,6 @@
 package top.ntutn.sevenzip
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,24 +48,9 @@ fun main() {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
                     ) {
-                        Column {
-                            Row {
-                                Text("Scale")
-                                val sliderState = remember {
-                                    SliderState(
-                                        value = 1f,
-                                        steps = 0,
-                                        onValueChangeFinished = {},
-                                        valueRange = 0.5f..5f
-                                    )
-                                }
-                                // 这里由Slider来做交互体验有点奇怪，但目前能用
-                                sliderState.onValueChangeFinished = {
-                                    customDensity = Density(sliderState.value, sliderState.value)
-                                }
-                                Slider(sliderState)
-                            }
-                        }
+                        SettingPage(customDensity, onDensityChange = {
+                            customDensity = it
+                        })
                     }
                 }
             }

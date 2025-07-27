@@ -18,8 +18,6 @@ import java.awt.image.BufferedImage
 private const val STRUCTURE_ALIGN_BYTE = 1
 private const val STRUCTURE_ALIGN_NONE = 0
 
-// 定义Win32 API所需的类型别名
-typealias HICON = Pointer
 typealias HANDLE = Pointer
 
 // 定义Shell32接口
