@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 kotlin {
@@ -48,6 +49,9 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.jna)
             implementation(libs.jna.platform)
+            api(libs.androidx.datastore.preferences.core)
+            api(libs.androidx.datastore.core.okio)
+            implementation(libs.kotlinx.serialization)
         }
     }
 }
