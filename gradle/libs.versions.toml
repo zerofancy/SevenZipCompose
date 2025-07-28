@@ -1,12 +1,12 @@
 [versions]
 androidx-lifecycle = "2.9.1"
-composeHotReload = "1.0.0-alpha11"
+composeHotReload = "1.0.0-beta04"
 composeMultiplatform = "1.8.2"
 junit = "4.13.2"
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
 sevenzipjbinding = "16.02-2.01"
-filekit = "0.10.0-beta04"
+filekit = "0.10.0"
 jna="5.17.0"
 
 [libraries]
