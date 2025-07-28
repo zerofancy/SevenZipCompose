@@ -69,6 +69,33 @@ object FileIconFetcher {
     private const val FILE_ATTRIBUTE_DIRECTORY = 0x00000010
     private const val FILE_ATTRIBUTE_NORMAL = 0x00000080
 
+    @Volatile
+    private var inited: Boolean? = null
+
+    @Volatile
+    private lateinit var user32: User32
+    @Volatile
+    private lateinit var gdi32: GDI32
+    @Volatile
+    private lateinit var shell32: Shell32
+
+    fun tryInit(): Boolean {
+        inited?.let {
+            return it
+        }
+        try {
+            user32 = User32.INSTANCE
+            gdi32 = GDI32.INSTANCE
+            shell32 = Shell32.INSTANCE
+        } catch (e: UnsatisfiedLinkError) {
+            e.printStackTrace()
+            inited = false
+            return false
+        }
+        inited = true
+        return true
+    }
+
     /**
      * 获取文件或文件夹的图标
      */
@@ -77,7 +104,7 @@ object FileIconFetcher {
         val flags = SHGFI_ICON or (if (isLarge) SHGFI_LARGEICON else SHGFI_SMALLICON) or SHGFI_USEFILEATTRIBUTES
         val fileAttributes = if (isDirectory) FILE_ATTRIBUTE_DIRECTORY else FILE_ATTRIBUTE_NORMAL
 
-        val result = Shell32.INSTANCE.SHGetFileInfo(
+        val result = shell32.SHGetFileInfo(
             path,
             fileAttributes,
             shfi,
@@ -97,8 +124,6 @@ object FileIconFetcher {
 
     private fun toImage(hicon: HICON?): BufferedImage? {
         var deviceContext: Pointer? = null
-        val user32 = User32.INSTANCE
-        val gdi32 = GDI32.INSTANCE
         val info = WinGDI.ICONINFO()
 
         try {

@@ -44,12 +44,8 @@ interface GtkLibrary : Library {
 
 object LinuxFileIconProvider {
     // 初始化GTK库
-    private val gtk: GtkLibrary by lazy {
-        Native.load("gtk-3", GtkLibrary::class.java).apply {
-            gtk_init(intArrayOf(0), null)
-            println("GTK initialized successfully")
-        }
-    }
+    private lateinit var gtk: GtkLibrary
+    private var inited: Boolean? = null
 
     // 扩展名到图标名称的映射
     private val extensionToIconName = mapOf(
@@ -62,6 +58,24 @@ object LinuxFileIconProvider {
         setOf("xlsx", "xls") to "application-vnd.ms-excel",
         setOf("pptx", "ppt") to "application-vnd.ms-powerpoint"
     )
+
+    fun tryInit(): Boolean {
+        inited?.let {
+            return it
+        }
+        try {
+            gtk = Native.load("gtk-3", GtkLibrary::class.java).apply {
+                gtk_init(intArrayOf(0), null)
+                println("GTK initialized successfully")
+            }
+            inited = true
+            return true
+        } catch (e: UnsatisfiedLinkError) {
+            e.printStackTrace()
+            inited = false
+            return false
+        }
+    }
 
     /**
      * 以suspend function形式提供的图标获取方法

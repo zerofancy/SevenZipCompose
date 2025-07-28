@@ -84,7 +84,7 @@ private val iconCache = mutableMapOf<File, Painter?>()
 @Composable
 private fun NodeIconPainter(node: ArchiveNode, onPainterLoaded: (Painter?) -> Unit) {
     val callback by rememberUpdatedState(onPainterLoaded)
-    if (hostOs.isWindows) {
+    if (hostOs.isWindows && FileIconFetcher.tryInit()) {
         LaunchedEffect(node) {
             withContext(Dispatchers.IO) {
                 val dummyFile = obtainDummyFile(node)
@@ -101,7 +101,7 @@ private fun NodeIconPainter(node: ArchiveNode, onPainterLoaded: (Painter?) -> Un
                 }
             }
         }
-    } else if (hostOs.isLinux) {
+    } else if (hostOs.isLinux && LinuxFileIconProvider.tryInit()) {
         LaunchedEffect(node) {
             val dummyFile = obtainDummyFile(node)
             val painter = loadIconWithCache(dummyFile) {
