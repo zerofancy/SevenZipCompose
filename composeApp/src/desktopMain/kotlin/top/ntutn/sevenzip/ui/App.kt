@@ -20,7 +20,11 @@ import top.ntutn.sevenzip.SevenZipViewModel
 
 @Composable
 @Preview
-fun App(tryUseSystemIcon: Boolean, onOpenSetting: () -> Unit = {}) {
+fun App(
+    tryUseSystemIcon: Boolean,
+    onOpenSetting: () -> Unit = {},
+    onOpenFileNameChange: (String?) -> Unit
+) {
     MaterialTheme {
         Column {
             val viewModel = viewModel(SevenZipViewModel::class)
@@ -37,7 +41,9 @@ fun App(tryUseSystemIcon: Boolean, onOpenSetting: () -> Unit = {}) {
                 Button(onClick = {
                     scope.launch {
                         val kitFile = FileKit.openFilePicker()?.file ?: return@launch
-                        viewModel.openArchive(kitFile)
+                        if (viewModel.openArchive(kitFile)) {
+                            onOpenFileNameChange(kitFile.name)
+                        }
                     }
                 }) {
                     Text("Open")

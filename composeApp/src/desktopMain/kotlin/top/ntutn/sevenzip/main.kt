@@ -3,6 +3,7 @@ package top.ntutn.sevenzip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,9 +44,17 @@ fun main() {
             .settingData()
             .map { Density(it.density, it.fontScale) }
             .collectAsState(Density(1f, 1f))
+        var openedFileName: String? by remember { mutableStateOf(null) }
+        val windowTitle by derivedStateOf {
+            if (openedFileName != null) {
+                "SevenZip - $openedFileName"
+            } else {
+                "SevenZip"
+            }
+        }
         Window(
             onCloseRequest = ::exitApplication,
-            title = "SevenZip",
+            title = windowTitle,
             icon = painterResource(Res.drawable.icon)
         ) {
             val tryUseSystemIcon by settingDataStore.settingData()
@@ -54,9 +63,15 @@ fun main() {
             CompositionLocalProvider(
                 LocalDensity provides customDensity
             ) {
-                App(tryUseSystemIcon = tryUseSystemIcon, onOpenSetting = {
-                    settingOpened = true
-                })
+                App(
+                    tryUseSystemIcon = tryUseSystemIcon,
+                    onOpenSetting = {
+                        settingOpened = true
+                    },
+                    onOpenFileNameChange = {
+                        openedFileName = it
+                    }
+                )
             }
             if (settingOpened) {
                 DialogWindow(
