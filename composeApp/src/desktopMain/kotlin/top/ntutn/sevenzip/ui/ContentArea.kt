@@ -38,7 +38,8 @@ import java.io.File
 @Composable
 fun ContentArea(
     currentNode: ArchiveNode?,
-    modifier: Modifier = Modifier.Companion,
+    tryUseSystemIcon: Boolean,
+    modifier: Modifier = Modifier,
     onEnterDir: (ArchiveNode) -> Unit = {}
 ) {
     Column(modifier = modifier) {
@@ -50,10 +51,10 @@ fun ContentArea(
                     Row {
                         var iconPainter by remember {
                             mutableStateOf<Painter>(
-                                ColorPainter(Color.Companion.LightGray)
+                                ColorPainter(Color.LightGray)
                             )
                         }
-                        NodeIconPainter(childrenNode) {
+                        NodeIconPainter(childrenNode, tryUseSystemIcon = tryUseSystemIcon) {
                             if (it != null) {
                                 iconPainter = it
                             }
@@ -62,7 +63,7 @@ fun ContentArea(
                         Image(
                             painter = iconPainter,
                             contentDescription = null,
-                            modifier = Modifier.Companion.size(48.dp)
+                            modifier = Modifier.size(48.dp)
                         )
                         Text(childrenNode.name)
                         if (childrenNode.isDir) {
@@ -82,9 +83,9 @@ fun ContentArea(
 private val iconCache = mutableMapOf<File, Painter?>()
 
 @Composable
-private fun NodeIconPainter(node: ArchiveNode, onPainterLoaded: (Painter?) -> Unit) {
+private fun NodeIconPainter(node: ArchiveNode, tryUseSystemIcon: Boolean, onPainterLoaded: (Painter?) -> Unit) {
     val callback by rememberUpdatedState(onPainterLoaded)
-    if (hostOs.isWindows && FileIconFetcher.tryInit()) {
+    if (tryUseSystemIcon && hostOs.isWindows && FileIconFetcher.tryInit()) {
         LaunchedEffect(node) {
             withContext(Dispatchers.IO) {
                 val dummyFile = obtainDummyFile(node)
@@ -101,7 +102,7 @@ private fun NodeIconPainter(node: ArchiveNode, onPainterLoaded: (Painter?) -> Un
                 }
             }
         }
-    } else if (hostOs.isLinux && LinuxFileIconProvider.tryInit()) {
+    } else if (tryUseSystemIcon && hostOs.isLinux && LinuxFileIconProvider.tryInit()) {
         LaunchedEffect(node) {
             val dummyFile = obtainDummyFile(node)
             val painter = loadIconWithCache(dummyFile) {

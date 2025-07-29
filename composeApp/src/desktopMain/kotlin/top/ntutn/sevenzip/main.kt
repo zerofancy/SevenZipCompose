@@ -48,10 +48,13 @@ fun main() {
             title = "SevenZip",
             icon = painterResource(Res.drawable.icon)
         ) {
+            val tryUseSystemIcon by settingDataStore.settingData()
+                .map { it.tryUseSystemIcon }
+                .collectAsState(false)
             CompositionLocalProvider(
                 LocalDensity provides customDensity
             ) {
-                App(onOpenSetting = {
+                App(tryUseSystemIcon = tryUseSystemIcon, onOpenSetting = {
                     settingOpened = true
                 })
             }
@@ -64,11 +67,21 @@ fun main() {
                         LocalDensity provides customDensity
                     ) {
                         val scope = rememberCoroutineScope()
-                        SettingPage(customDensity, onDensityChange = {
-                            scope.launch {
-                                settingDataStore.updateDensity(density = it.density, fontScale = it.fontScale)
-                            }
-                        })
+                        SettingPage(
+                            customDensity,
+                            useSystemIcon = tryUseSystemIcon,
+                            onDensityChange = {
+                                scope.launch {
+                                    settingDataStore.updateDensity(
+                                        density = it.density,
+                                        fontScale = it.fontScale
+                                    )
+                                }
+                            }, onUseSystemIconChange = {
+                                scope.launch {
+                                    settingDataStore.updateUseSystemIcon(it)
+                                }
+                            })
                     }
                 }
             }

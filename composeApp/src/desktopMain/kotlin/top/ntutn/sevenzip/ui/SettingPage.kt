@@ -2,6 +2,7 @@ package top.ntutn.sevenzip.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderState
@@ -10,10 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
+import org.jetbrains.skiko.hostOs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingPage(customDensity: Density, modifier: Modifier = Modifier.Companion, onDensityChange: (Density) -> Unit) {
+fun SettingPage(
+    customDensity: Density,
+    useSystemIcon: Boolean,
+    modifier: Modifier = Modifier.Companion,
+    onDensityChange: (Density) -> Unit = {},
+    onUseSystemIconChange: (Boolean) -> Unit = {}
+) {
     Column(modifier = modifier) {
         val densitySliderState = remember {
             SliderState(
@@ -48,6 +56,12 @@ fun SettingPage(customDensity: Density, modifier: Modifier = Modifier.Companion,
         Row {
             Text("Font Scale")
             Slider(fontScaleSliderState)
+        }
+        if (hostOs.isWindows || hostOs.isLinux) {
+            Row {
+                Checkbox(checked = useSystemIcon, onCheckedChange = onUseSystemIconChange)
+                Text("Try use system icon")
+            }
         }
     }
 }

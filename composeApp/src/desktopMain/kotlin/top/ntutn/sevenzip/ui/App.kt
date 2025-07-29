@@ -20,7 +20,7 @@ import top.ntutn.sevenzip.SevenZipViewModel
 
 @Composable
 @Preview
-fun App(onOpenSetting: () -> Unit = {}) {
+fun App(tryUseSystemIcon: Boolean, onOpenSetting: () -> Unit = {}) {
     MaterialTheme {
         Column {
             val viewModel = viewModel(SevenZipViewModel::class)
@@ -48,7 +48,7 @@ fun App(onOpenSetting: () -> Unit = {}) {
             }
             // content
             Box {
-                ContentArea(currentNode, onEnterDir = viewModel::enterFolder)
+                ContentArea(currentNode, tryUseSystemIcon = tryUseSystemIcon, onEnterDir = viewModel::enterFolder)
             }
         }
     }

@@ -22,4 +22,8 @@ class GlobalSettingDataStore {
     suspend fun updateDensity(density: Float, fontScale: Float) = db.updateData {
         it.copy(density = density, fontScale = fontScale)
     }
+
+    suspend fun updateUseSystemIcon(useSystemIcon: Boolean) = db.updateData {
+        it.copy(tryUseSystemIcon = useSystemIcon)
+    }
 }

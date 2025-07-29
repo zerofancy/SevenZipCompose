@@ -9,7 +9,7 @@ import okio.BufferedSink
 import okio.BufferedSource
 
 @Serializable
-data class GlobalSettingModel(val density: Float = 1f, val fontScale: Float = 1f) {
+data class GlobalSettingModel(val density: Float = 1f, val fontScale: Float = 1f, val tryUseSystemIcon: Boolean = false) {
     object Serializer: OkioSerializer<GlobalSettingModel> {
         private val jsonClient = Json {
             ignoreUnknownKeys = true
