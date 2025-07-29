@@ -1,12 +1,13 @@
 package top.ntutn.sevenzip.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,108 +47,46 @@ fun ContentArea(
         if (currentNode == null) {
             Text("No open file now")
         } else {
-            LazyColumn {
-                items(currentNode.children) { childrenNode ->
-                    Row {
-                        var iconPainter by remember {
-                            mutableStateOf<Painter>(
-                                ColorPainter(Color.LightGray)
-                            )
-                        }
-                        NodeIconPainter(childrenNode, tryUseSystemIcon = tryUseSystemIcon) {
-                            if (it != null) {
-                                iconPainter = it
-                            }
-                        }
-
-                        Image(
-                            painter = iconPainter,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Text(childrenNode.name)
+            FlowColumn {
+                currentNode.children.forEach { childrenNode ->
+                    SingleFileIcon(childrenNode, tryUseSystemIcon, onDoubleClick = {
                         if (childrenNode.isDir) {
-                            Button(onClick = {
-                                onEnterDir(childrenNode)
-                            }) {
-                                Text("Browse")
-                            }
+                            onEnterDir(childrenNode)
                         }
-                    }
+                    })
                 }
             }
         }
     }
 }
-
-private val iconCache = mutableMapOf<File, Painter?>()
 
 @Composable
-private fun NodeIconPainter(node: ArchiveNode, tryUseSystemIcon: Boolean, onPainterLoaded: (Painter?) -> Unit) {
-    val callback by rememberUpdatedState(onPainterLoaded)
-    if (tryUseSystemIcon && hostOs.isWindows && FileIconFetcher.tryInit()) {
-        LaunchedEffect(node) {
-            withContext(Dispatchers.IO) {
-                val dummyFile = obtainDummyFile(node)
-                val painter = loadIconWithCache(dummyFile) {
-                    val fileIcon = FileIconFetcher.getFileIcon(
-                        path = dummyFile.canonicalPath,
-                        isDirectory = node.isDir,
-                        isLarge = true
-                    )
-                    fileIcon?.toPainter()
-                }
-                withContext(Dispatchers.Main) {
-                    callback(painter)
-                }
+private fun SingleFileIcon(
+    childrenNode: ArchiveNode,
+    tryUseSystemIcon: Boolean,
+    modifier: Modifier = Modifier,
+    onDoubleClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .combinedClickable(onDoubleClick = onDoubleClick) {}
+    ) {
+        var iconPainter by remember {
+            mutableStateOf<Painter>(
+                ColorPainter(Color.LightGray)
+            )
+        }
+        NodeIconPainter(childrenNode, tryUseSystemIcon = tryUseSystemIcon) {
+            if (it != null) {
+                iconPainter = it
             }
         }
-    } else if (tryUseSystemIcon && hostOs.isLinux && LinuxFileIconProvider.tryInit()) {
-        LaunchedEffect(node) {
-            val dummyFile = obtainDummyFile(node)
-            val painter = loadIconWithCache(dummyFile) {
-                withContext(Dispatchers.Main) {
-                    val icon = LinuxFileIconProvider.getFileIcon(dummyFile.canonicalPath)
-                    icon?.let { image -> BitmapPainter(image) }
-                }
-            }
-            withContext(Dispatchers.Main) {
-                callback(painter)
-            }
-        }
-    } else {
-        val resource by derivedStateOf {
-            FileIconUtils.getIconPath(node.isDir, node.name)
-        }
-        callback(painterResource(resource))
+        Image(
+            painter = iconPainter,
+            contentDescription = null,
+            modifier = Modifier
+                .size(48.dp)
+        )
+        Text(childrenNode.name)
     }
-}
-
-private suspend fun obtainDummyFile(node: ArchiveNode): File {
-    val extension = node.name.split(".").last()
-    val dummyFile = if (node.isDir) {
-        FileKit.cacheDir.file
-    } else if (extension.isBlank()) {
-        File(FileKit.cacheDir.file, "dummy")
-    } else {
-        File(FileKit.cacheDir.file, "dummy.${extension}")
-    }
-    if (!dummyFile.exists()) {
-        withContext(Dispatchers.IO) {
-            dummyFile.createNewFile()
-        }
-    }
-    return dummyFile
-}
-
-private suspend fun loadIconWithCache(
-    dummyFile: File,
-    realLoader: suspend (File) -> Painter?
-): Painter? = withContext(Dispatchers.Main) {
-    if (iconCache.contains(dummyFile)) {
-        return@withContext iconCache[dummyFile]
-    }
-    val painter = realLoader(dummyFile)
-    iconCache[dummyFile] = painter
-    return@withContext painter
 }
