@@ -1,0 +1,5 @@
+<resources>
+    <string name="toolbar_upward">上级</string>
+    <string name="toolbar_open">打开</string>
+    <string name="toolbar_setting">设置</string>
+</resources>

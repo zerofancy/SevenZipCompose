@@ -14,7 +14,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import sevenzip.composeapp.generated.resources.Res
+import sevenzip.composeapp.generated.resources.toolbar_open
+import sevenzip.composeapp.generated.resources.toolbar_setting
+import sevenzip.composeapp.generated.resources.toolbar_upward
 import top.ntutn.sevenzip.SevenZipViewModel
 
 
@@ -36,7 +41,7 @@ fun App(
                 Button(onClick = {
                     viewModel.moveBack()
                 }, enabled = currentNode?.parent != null) {
-                    Text("Back")
+                    Text(stringResource(Res.string.toolbar_upward))
                 }
                 Button(onClick = {
                     scope.launch {
@@ -46,10 +51,10 @@ fun App(
                         }
                     }
                 }) {
-                    Text("Open")
+                    Text(stringResource(Res.string.toolbar_open))
                 }
                 Button(onClick = onOpenSetting) {
-                    Text("Setting")
+                    Text(stringResource(Res.string.toolbar_setting))
                 }
             }
             // content
