@@ -3,7 +3,6 @@ package top.ntutn.sevenzip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,11 +16,17 @@ import androidx.compose.ui.window.application
 import io.github.vinceglb.filekit.FileKit
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import sevenzip.composeapp.generated.resources.Res
+import sevenzip.composeapp.generated.resources.app_name
 import sevenzip.composeapp.generated.resources.icon
+import sevenzip.composeapp.generated.resources.setting_window_title
+import sevenzip.composeapp.generated.resources.title_template
 import top.ntutn.sevenzip.storage.GlobalSettingDataStore
 import top.ntutn.sevenzip.ui.App
 import top.ntutn.sevenzip.ui.SettingPage
@@ -36,7 +41,9 @@ fun main() {
         e.printStackTrace()
         error(e)
     }
-    FileKit.init("SevenZip")
+    runBlocking {
+        FileKit.init(getString(Res.string.app_name))
+    }
     val settingDataStore = GlobalSettingDataStore()
     application {
         var settingOpened by remember { mutableStateOf(false) }
@@ -45,13 +52,10 @@ fun main() {
             .map { Density(it.density, it.fontScale) }
             .collectAsState(Density(1f, 1f))
         var openedFileName: String? by remember { mutableStateOf(null) }
-        val windowTitle by derivedStateOf {
-            if (openedFileName != null) {
-                "SevenZip - $openedFileName"
-            } else {
-                "SevenZip"
-            }
-        }
+        val windowTitle = openedFileName?.let { fileName ->
+            stringResource(Res.string.title_template, fileName)
+        } ?: stringResource(Res.string.app_name)
+
         Window(
             onCloseRequest = ::exitApplication,
             title = windowTitle,
@@ -76,7 +80,7 @@ fun main() {
             if (settingOpened) {
                 DialogWindow(
                     onCloseRequest = { settingOpened = false },
-                    title = "设置"
+                    title = stringResource(Res.string.setting_window_title)
                 ) {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity

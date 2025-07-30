@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">SevenZipCompose</string>
+    <string name="title_template">SevenZipCompose - %1$s</string>
+</resources>

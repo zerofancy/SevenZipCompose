@@ -11,7 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.skiko.hostOs
+import sevenzip.composeapp.generated.resources.Res
+import sevenzip.composeapp.generated.resources.setting_window_density
+import sevenzip.composeapp.generated.resources.setting_window_font_scale
+import sevenzip.composeapp.generated.resources.setting_window_try_use_system_icon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,17 +55,17 @@ fun SettingPage(
         fontScaleSliderState.value = customDensity.fontScale
 
         Row {
-            Text("Density")
+            Text(stringResource(Res.string.setting_window_density))
             Slider(densitySliderState)
         }
         Row {
-            Text("Font Scale")
+            Text(stringResource(Res.string.setting_window_font_scale))
             Slider(fontScaleSliderState)
         }
         if (hostOs.isWindows || hostOs.isLinux) {
             Row {
                 Checkbox(checked = useSystemIcon, onCheckedChange = onUseSystemIconChange)
-                Text("Try use system icon")
+                Text(stringResource(Res.string.setting_window_try_use_system_icon))
             }
         }
     }
