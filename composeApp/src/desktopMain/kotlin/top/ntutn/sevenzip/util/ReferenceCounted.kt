@@ -65,8 +65,8 @@ fun <T> T.toReferenceCounted(onFinalRelease: ((T) -> Unit)? = null): ReferenceCo
     return ReferenceCounted(this, onFinalRelease)
 }
 
-fun <T> ReferenceCounted<T>.rememberClose(block: (T) -> Unit) {
-    try {
+fun <T, R> ReferenceCounted<T>.rememberClose(block: (T) -> R): R {
+    return try {
         block(get())
     } finally {
         close()

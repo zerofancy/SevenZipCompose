@@ -56,7 +56,7 @@ fun App(
                         viewModel.enterFolder(node)
                     } else {
                         scope.launch {
-                            val file = viewModel.extract2Temp(node)
+                            val file = viewModel.extract2Temp(node) ?: return@launch
                             println(file)
                             if (Desktop.isDesktopSupported()) {
                                 try {

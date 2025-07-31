@@ -90,10 +90,15 @@ class SevenZipViewModel : ViewModel() {
             it.deleteOnExit()
         }
         val randomAccessFile = RandomAccessFile(outFile, "rw")
-        archiveCounted.rememberClose { archive ->
-            archive.extractSlow(node.index, RandomAccessFileOutStream(randomAccessFile))
+        return@withContext archiveCounted.rememberClose { archive ->
+            try {
+                archive.extractSlow(node.index, RandomAccessFileOutStream(randomAccessFile))
+                outFile
+            } catch (e: SevenZipException) {
+                e.printStackTraceExtended()
+                null
+            }
         }
-        return@withContext outFile
     }
 
     fun moveBack() {
