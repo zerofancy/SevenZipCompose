@@ -10,7 +10,7 @@ import kotlin.jvm.Throws
  * 优化后的引用计数实现，解决线程可见性问题
  */
 @OptIn(ExperimentalAtomicApi::class)
-class ReferenceCounted<T : Closeable>(
+class ReferenceCounted<T>(
     private val resource: T,
     private val onFinalRelease: ((T) -> Unit)? = null
 ) : Closeable {
@@ -48,7 +48,7 @@ class ReferenceCounted<T : Closeable>(
         val currentCount = refCount.decrementAndGet()
         if (currentCount == 0) {
             if (!isClosed.compareAndSet(expectedValue = false, newValue = true)) {
-                resource.close()
+                println("close ref")
                 onFinalRelease?.invoke(resource)
             }
         } else if (currentCount < 0) {
@@ -61,11 +61,11 @@ class ReferenceCounted<T : Closeable>(
     fun getRefCount(): Int = refCount.get()
 }
 
-fun <T : Closeable> T.toReferenceCounted(onFinalRelease: ((T) -> Unit)? = null): ReferenceCounted<T> {
+fun <T> T.toReferenceCounted(onFinalRelease: ((T) -> Unit)? = null): ReferenceCounted<T> {
     return ReferenceCounted(this, onFinalRelease)
 }
 
-fun <T : Closeable> ReferenceCounted<T>.rememberClose(block: (T) -> Unit) {
+fun <T> ReferenceCounted<T>.rememberClose(block: (T) -> Unit) {
     try {
         block(get())
     } finally {
