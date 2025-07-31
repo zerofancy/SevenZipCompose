@@ -8,11 +8,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okio.IOException
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import top.ntutn.sevenzip.SevenZipViewModel
+import java.awt.Desktop
 
 
 @Composable
@@ -41,10 +47,29 @@ fun App(
                     onOpenSetting = onOpenSetting
                 )
             }
+            val scope = rememberCoroutineScope()
             ContentArea(currentNode,
                 modifier = Modifier.padding(16.dp),
                 tryUseSystemIcon = tryUseSystemIcon,
-                onEnterDir = viewModel::enterFolder
+                onAccessNode = { node ->
+                    if (node.isDir) {
+                        viewModel.enterFolder(node)
+                    } else {
+                        scope.launch {
+                            val file = viewModel.extract2Temp(node)
+                            println(file)
+                            if (Desktop.isDesktopSupported()) {
+                                try {
+                                    withContext(Dispatchers.IO) {
+                                        Desktop.getDesktop().open(file)
+                                    }
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                    }
+                }
             )
         }
     }

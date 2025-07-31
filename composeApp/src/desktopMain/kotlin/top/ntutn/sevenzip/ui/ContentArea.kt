@@ -34,7 +34,7 @@ fun ContentArea(
     currentNode: ArchiveNode?,
     tryUseSystemIcon: Boolean,
     modifier: Modifier = Modifier,
-    onEnterDir: (ArchiveNode) -> Unit = {}
+    onAccessNode: (ArchiveNode) -> Unit = {}
 ) {
     Column(modifier = modifier) {
         if (currentNode == null) {
@@ -43,9 +43,7 @@ fun ContentArea(
             FlowRow {
                 currentNode.children.forEach { childrenNode ->
                     SingleFileIcon(childrenNode, tryUseSystemIcon, onDoubleClick = {
-                        if (childrenNode.isDir) {
-                            onEnterDir(childrenNode)
-                        }
+                        onAccessNode(childrenNode)
                     })
                 }
             }

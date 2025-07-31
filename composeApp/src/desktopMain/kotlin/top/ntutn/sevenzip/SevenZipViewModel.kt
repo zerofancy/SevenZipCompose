@@ -6,12 +6,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import top.ntutn.sevenzip.util.ReferenceCounted
 import top.ntutn.sevenzip.util.rememberClose
 import top.ntutn.sevenzip.util.toReferenceCounted
@@ -78,6 +79,21 @@ class SevenZipViewModel : ViewModel() {
 
     fun enterFolder(node: ArchiveNode) {
         _browsingNode.value = node
+    }
+
+    suspend fun extract2Temp(node: ArchiveNode): File? = withContext(Dispatchers.IO) {
+        assert(!node.isDir) { "Directory is not supported now" }
+        assert(node.index != ArchiveNode.EMPTY_INDEX)
+
+        val archiveCounted = archiveRef.load()?.clone() ?: return@withContext null
+        val outFile = File.createTempFile("7zc", "." + node.extension).also {
+            it.deleteOnExit()
+        }
+        val randomAccessFile = RandomAccessFile(outFile, "rw")
+        archiveCounted.rememberClose { archive ->
+            archive.extractSlow(node.index, RandomAccessFileOutStream(randomAccessFile))
+        }
+        return@withContext outFile
     }
 
     fun moveBack() {
