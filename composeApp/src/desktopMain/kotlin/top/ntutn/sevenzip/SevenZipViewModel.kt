@@ -30,18 +30,21 @@ class SevenZipViewModel : ViewModel() {
     val browsingNode: StateFlow<ArchiveNode?> get() = _browsingNode
 
     suspend fun openArchive(file: File): Boolean = viewModelScope.async(Dispatchers.Default) {
-        val archive = RandomAccessFile(file, "r").use { file ->
-            try {
-                SevenZip.openInArchive(null, RandomAccessFileInStream(file))
-            } catch (e: SevenZipException) {
-                e.printStackTrace()
-                return@async false
-            }
+        val randomAccessFile = RandomAccessFile(file, "r")
+        val archive = try {
+            SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
+        } catch (e: SevenZipException) {
+            e.printStackTrace()
+            randomAccessFile.close() // archive没有成功打开，手动把文件关闭
+            return@async false
         }
         val closeableArchive = archive.toReferenceCounted {
+            println("close invoke $it")
+            randomAccessFile.close()
             it.close()
         }.also {
             val old = this@SevenZipViewModel.archiveRef.exchange(it.clone())
+            println("close invoke ${old?.get()}")
             old?.close()
         }
         closeableArchive.rememberClose { archive ->
