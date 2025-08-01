@@ -14,11 +14,14 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import sevenzip.composeapp.generated.resources.Res
+import sevenzip.composeapp.generated.resources.toolbar_about
 import sevenzip.composeapp.generated.resources.toolbar_open
 import sevenzip.composeapp.generated.resources.toolbar_setting
 import sevenzip.composeapp.generated.resources.toolbar_upward
 import top.ntutn.sevenzip.ArchiveNode
 import top.ntutn.sevenzip.SevenZipViewModel
+import java.awt.Desktop
+import java.net.URI
 
 @Composable
 fun ToolbarArea(
@@ -49,6 +52,14 @@ fun ToolbarArea(
         Spacer(modifier = Modifier.size(4.dp))
         Button(onClick = onOpenSetting) {
             Text(stringResource(Res.string.toolbar_setting))
+        }
+        Spacer(modifier = Modifier.size(4.dp))
+        Button(onClick = {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI("https://github.com/zerofancy/SevenZipCompose"))
+            }
+        }) {
+            Text(stringResource(Res.string.toolbar_about))
         }
     }
 }
