@@ -7,12 +7,10 @@ import kotlinx.coroutines.launch
 
 class DefaultToastController(private val coroutineScope: CoroutineScope): IToastController {
     private val messages = mutableStateListOf<ToastMessage>()
-    private var nextId = 0L
 
     override fun show(text: String, duration: Long) {
         coroutineScope.launch {
-            val id = nextId++
-            val toastMessage = ToastMessage(id, text, duration)
+            val toastMessage = ToastMessage(text, duration)
             messages.add(toastMessage)
 
             delay(duration)
