@@ -28,6 +28,7 @@ import sevenzip.composeapp.generated.resources.icon
 import sevenzip.composeapp.generated.resources.setting_window_title
 import sevenzip.composeapp.generated.resources.title_template
 import top.ntutn.sevenzip.storage.GlobalSettingDataStore
+import top.ntutn.sevenzip.toast.ToastHost
 import top.ntutn.sevenzip.ui.App
 import top.ntutn.sevenzip.ui.SettingPage
 
@@ -67,15 +68,17 @@ fun main() {
             CompositionLocalProvider(
                 LocalDensity provides customDensity
             ) {
-                App(
-                    tryUseSystemIcon = tryUseSystemIcon,
-                    onOpenSetting = {
-                        settingOpened = true
-                    },
-                    onOpenFileNameChange = {
-                        openedFileName = it
-                    }
-                )
+                ToastHost {
+                    App(
+                        tryUseSystemIcon = tryUseSystemIcon,
+                        onOpenSetting = {
+                            settingOpened = true
+                        },
+                        onOpenFileNameChange = {
+                            openedFileName = it
+                        }
+                    )
+                }
             }
             if (settingOpened) {
                 DialogWindow(

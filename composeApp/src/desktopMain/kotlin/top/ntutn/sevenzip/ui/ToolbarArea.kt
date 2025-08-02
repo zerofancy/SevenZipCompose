@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import sevenzip.composeapp.generated.resources.Res
@@ -23,10 +24,13 @@ import sevenzip.composeapp.generated.resources.tool_setting
 import sevenzip.composeapp.generated.resources.tool_upward
 import sevenzip.composeapp.generated.resources.toolbar_about
 import sevenzip.composeapp.generated.resources.toolbar_open
+import sevenzip.composeapp.generated.resources.toolbar_open_failed
+import sevenzip.composeapp.generated.resources.toolbar_project_url
 import sevenzip.composeapp.generated.resources.toolbar_setting
 import sevenzip.composeapp.generated.resources.toolbar_upward
 import top.ntutn.sevenzip.ArchiveNode
 import top.ntutn.sevenzip.SevenZipViewModel
+import top.ntutn.sevenzip.toast.LocalToastController
 import java.awt.Desktop
 import java.net.URI
 
@@ -40,6 +44,7 @@ fun ToolbarArea(
 ) {
     Row(modifier) {
         val scope = rememberCoroutineScope()
+        val toastController = LocalToastController.current
 
         TextButton(onClick = {
             viewModel.moveBack()
@@ -54,6 +59,8 @@ fun ToolbarArea(
                 val kitFile = FileKit.openFilePicker()?.file ?: return@launch
                 if (viewModel.openArchive(kitFile)) {
                     onOpenFileNameChange(kitFile.name)
+                } else {
+                    toastController.show(getString(Res.string.toolbar_open_failed))
                 }
             }
         }) {
@@ -71,8 +78,12 @@ fun ToolbarArea(
         }
         Spacer(modifier = Modifier.size(4.dp))
         TextButton(onClick = {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI("https://github.com/zerofancy/SevenZipCompose"))
+            scope.launch {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(URI(getString(Res.string.toolbar_project_url)))
+                } else {
+                    toastController.show(getString(Res.string.toolbar_open_failed))
+                }
             }
         }) {
             Icon(painterResource(Res.drawable.tool_about), contentDescription = stringResource(Res.string.toolbar_setting))

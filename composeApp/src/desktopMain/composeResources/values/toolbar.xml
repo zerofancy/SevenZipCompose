@@ -3,4 +3,7 @@
     <string name="toolbar_open">打开</string>
     <string name="toolbar_setting">设置</string>
     <string name="toolbar_about">关于</string>
+
+    <string name="toolbar_open_failed">打开失败</string>
+    <string name="toolbar_project_url">https://github.com/zerofancy/SevenZipCompose</string>
 </resources>
