@@ -1,0 +1,4 @@
+<resources>
+    <string name="about_window_title">关于</string>
+    <string name="about_window_button">Visit Github</string>
+</resources>

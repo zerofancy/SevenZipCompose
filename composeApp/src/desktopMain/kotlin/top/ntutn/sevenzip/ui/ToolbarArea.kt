@@ -40,7 +40,8 @@ fun ToolbarArea(
     currentNode: ArchiveNode?,
     modifier: Modifier = Modifier.Companion,
     onOpenFileNameChange: (String?) -> Unit = {},
-    onOpenSetting: () -> Unit = {}
+    onOpenSetting: () -> Unit = {},
+    onOpenAbout: () -> Unit = {},
 ) {
     Row(modifier) {
         val scope = rememberCoroutineScope()
@@ -78,13 +79,7 @@ fun ToolbarArea(
         }
         Spacer(modifier = Modifier.size(4.dp))
         TextButton(onClick = {
-            scope.launch {
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    Desktop.getDesktop().browse(URI(getString(Res.string.toolbar_project_url)))
-                } else {
-                    toastController.show(getString(Res.string.toolbar_open_failed))
-                }
-            }
+            onOpenAbout()
         }) {
             Icon(painterResource(Res.drawable.tool_about), contentDescription = stringResource(Res.string.toolbar_setting))
             Spacer(modifier = Modifier.width(2.dp))

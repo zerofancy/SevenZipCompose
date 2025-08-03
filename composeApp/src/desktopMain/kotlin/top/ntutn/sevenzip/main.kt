@@ -23,12 +23,14 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import sevenzip.composeapp.generated.resources.Res
+import sevenzip.composeapp.generated.resources.about_window_title
 import sevenzip.composeapp.generated.resources.app_name
 import sevenzip.composeapp.generated.resources.icon
 import sevenzip.composeapp.generated.resources.setting_window_title
 import sevenzip.composeapp.generated.resources.title_template
 import top.ntutn.sevenzip.storage.GlobalSettingDataStore
 import top.ntutn.sevenzip.toast.ToastHost
+import top.ntutn.sevenzip.ui.AboutPage
 import top.ntutn.sevenzip.ui.App
 import top.ntutn.sevenzip.ui.SettingPage
 
@@ -48,6 +50,7 @@ fun main() {
     val settingDataStore = GlobalSettingDataStore()
     application {
         var settingOpened by remember { mutableStateOf(false) }
+        var aboutOpened by remember { mutableStateOf(false) }
         val customDensity by settingDataStore
             .settingData()
             .map { Density(it.density, it.fontScale) }
@@ -76,6 +79,9 @@ fun main() {
                         },
                         onOpenFileNameChange = {
                             openedFileName = it
+                        },
+                        onOpenAbout = {
+                            aboutOpened = true
                         }
                     )
                 }
@@ -104,6 +110,17 @@ fun main() {
                                     settingDataStore.updateUseSystemIcon(it)
                                 }
                             })
+                    }
+                }
+            }
+            if (aboutOpened) {
+                DialogWindow(onCloseRequest = {
+                    aboutOpened = false
+                }, title = stringResource(Res.string.about_window_title)) {
+                    CompositionLocalProvider(
+                        LocalDensity provides customDensity
+                    ) {
+                        AboutPage()
                     }
                 }
             }

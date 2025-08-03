@@ -26,6 +26,7 @@ import java.awt.Desktop
 fun App(
     tryUseSystemIcon: Boolean,
     onOpenSetting: () -> Unit = {},
+    onOpenAbout: () -> Unit = {},
     onOpenFileNameChange: (String?) -> Unit
 ) {
     MaterialTheme {
@@ -44,7 +45,8 @@ fun App(
                         .fillMaxWidth()
                         .padding(16.dp),
                     onOpenFileNameChange = onOpenFileNameChange,
-                    onOpenSetting = onOpenSetting
+                    onOpenSetting = onOpenSetting,
+                    onOpenAbout = onOpenAbout,
                 )
             }
             val scope = rememberCoroutineScope()
