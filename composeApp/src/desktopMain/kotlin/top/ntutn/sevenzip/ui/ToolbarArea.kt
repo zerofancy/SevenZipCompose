@@ -28,7 +28,7 @@ import sevenzip.composeapp.generated.resources.toolbar_open_failed
 import sevenzip.composeapp.generated.resources.toolbar_project_url
 import sevenzip.composeapp.generated.resources.toolbar_setting
 import sevenzip.composeapp.generated.resources.toolbar_upward
-import top.ntutn.sevenzip.ArchiveNode
+import top.ntutn.sevenzip.zip.ArchiveNode
 import top.ntutn.sevenzip.SevenZipViewModel
 import top.ntutn.sevenzip.toast.LocalToastController
 import java.awt.Desktop

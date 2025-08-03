@@ -1,4 +1,4 @@
-package top.ntutn.sevenzip
+package top.ntutn.sevenzip.zip
 
 class ArchiveNode {
     companion object {

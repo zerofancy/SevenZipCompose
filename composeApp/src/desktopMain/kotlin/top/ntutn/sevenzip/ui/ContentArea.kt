@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import sevenzip.composeapp.generated.resources.Res
 import sevenzip.composeapp.generated.resources.content_area_no_open_file
-import top.ntutn.sevenzip.ArchiveNode
+import top.ntutn.sevenzip.zip.ArchiveNode
 
 @Composable
 fun ContentArea(

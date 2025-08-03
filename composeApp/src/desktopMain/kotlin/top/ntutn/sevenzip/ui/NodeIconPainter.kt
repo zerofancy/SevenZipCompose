@@ -14,7 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
-import top.ntutn.sevenzip.ArchiveNode
+import top.ntutn.sevenzip.zip.ArchiveNode
 import top.ntutn.sevenzip.util.FileIconFetcher
 import top.ntutn.sevenzip.util.FileIconUtils
 import top.ntutn.sevenzip.util.LinuxFileIconProvider

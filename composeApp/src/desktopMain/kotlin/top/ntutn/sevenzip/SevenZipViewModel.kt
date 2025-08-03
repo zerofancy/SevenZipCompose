@@ -16,6 +16,7 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import top.ntutn.sevenzip.util.ReferenceCounted
 import top.ntutn.sevenzip.util.rememberClose
 import top.ntutn.sevenzip.util.toReferenceCounted
+import top.ntutn.sevenzip.zip.ArchiveNode
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.concurrent.atomics.AtomicReference
