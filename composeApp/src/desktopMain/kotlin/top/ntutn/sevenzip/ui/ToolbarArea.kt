@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -21,18 +22,17 @@ import sevenzip.composeapp.generated.resources.Res
 import sevenzip.composeapp.generated.resources.tool_about
 import sevenzip.composeapp.generated.resources.tool_open_file
 import sevenzip.composeapp.generated.resources.tool_setting
+import sevenzip.composeapp.generated.resources.tool_unarchive
 import sevenzip.composeapp.generated.resources.tool_upward
 import sevenzip.composeapp.generated.resources.toolbar_about
+import sevenzip.composeapp.generated.resources.toolbar_extract
 import sevenzip.composeapp.generated.resources.toolbar_open
 import sevenzip.composeapp.generated.resources.toolbar_open_failed
-import sevenzip.composeapp.generated.resources.toolbar_project_url
 import sevenzip.composeapp.generated.resources.toolbar_setting
 import sevenzip.composeapp.generated.resources.toolbar_upward
-import top.ntutn.sevenzip.zip.ArchiveNode
 import top.ntutn.sevenzip.SevenZipViewModel
 import top.ntutn.sevenzip.toast.LocalToastController
-import java.awt.Desktop
-import java.net.URI
+import top.ntutn.sevenzip.zip.ArchiveNode
 
 @Composable
 fun ToolbarArea(
@@ -53,6 +53,16 @@ fun ToolbarArea(
             Icon(painterResource(Res.drawable.tool_upward), contentDescription = stringResource(Res.string.toolbar_upward))
             Spacer(modifier = Modifier.width(2.dp))
             Text(stringResource(Res.string.toolbar_upward))
+        }
+        TextButton(onClick = {
+            scope.launch {
+                val targetDir = FileKit.openDirectoryPicker()?.file
+                viewModel.extractAll(targetDir ?: return@launch)
+            }
+        }, enabled = currentNode != null) {
+            Icon(painterResource(Res.drawable.tool_unarchive), contentDescription = stringResource(Res.string.toolbar_extract))
+            Spacer(modifier = Modifier.width(2.dp))
+            Text(stringResource(Res.string.toolbar_extract))
         }
         Spacer(modifier = Modifier.size(4.dp))
         TextButton(onClick = {

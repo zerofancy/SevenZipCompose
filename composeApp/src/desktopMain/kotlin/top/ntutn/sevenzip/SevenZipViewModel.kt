@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.IInArchive
+import net.sf.sevenzipjbinding.IProgress
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
@@ -17,6 +18,7 @@ import top.ntutn.sevenzip.util.ReferenceCounted
 import top.ntutn.sevenzip.util.rememberClose
 import top.ntutn.sevenzip.util.toReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
+import top.ntutn.sevenzip.zip.ArchiveNodeExtractCallback
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.concurrent.atomics.AtomicReference
@@ -52,6 +54,7 @@ class SevenZipViewModel : ViewModel() {
             val itemCount = archive.numberOfItems
             val archiveTree: ArchiveNode = ArchiveNode().also {
                 it.name = "ROOT"
+                it.isDir = true
             }
             // 构造归档文件树
             for (i in 0 until itemCount) {
@@ -103,6 +106,23 @@ class SevenZipViewModel : ViewModel() {
                 null
             }
         }
+    }
+
+    suspend fun extractAll(targetDir: File) = withContext(Dispatchers.IO) {
+        assert(targetDir.isDirectory) { "target path should be a directory" }
+        val archiveCounted = archiveRef.load()?.clone() ?: return@withContext
+
+        val callback = ArchiveNodeExtractCallback(archiveTree, targetDir, object : IProgress {
+            override fun setTotal(total: Long) {
+            }
+
+            override fun setCompleted(complete: Long) {
+            }
+        })
+        archiveCounted.rememberClose { archive ->
+            archive.extract((0 until archive.numberOfItems).toList().toIntArray(), false, callback)
+        }
+        callback.close()
     }
 
     fun moveBack() {

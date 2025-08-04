@@ -1,6 +1,7 @@
 <resources>
     <string name="toolbar_upward">上级</string>
     <string name="toolbar_open">打开</string>
+    <string name="toolbar_extract">解压</string>
     <string name="toolbar_setting">设置</string>
     <string name="toolbar_about">关于</string>
 

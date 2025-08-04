@@ -1,5 +1,7 @@
 package top.ntutn.sevenzip.zip
 
+import java.io.File
+
 class ArchiveNode {
     companion object {
         const val EMPTY_INDEX = -1
@@ -27,6 +29,12 @@ class ArchiveNode {
                 name.split(".").lastOrNull() ?: ""
             }.also { _extension = it }
         }
+
+    fun relativePath(): String {
+        val p = parent ?: return name
+        p.parent ?: return name // 直接属于根节点
+        return p.relativePath() + File.separator + name
+    }
 
     fun printTree(): String {
         val sb = StringBuilder()
