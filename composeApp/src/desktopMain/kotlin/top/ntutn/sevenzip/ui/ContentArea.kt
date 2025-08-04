@@ -4,11 +4,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.ModalDrawer
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +42,9 @@ fun ContentArea(
 ) {
     Column(modifier = modifier) {
         if (currentNode == null) {
-            Text(stringResource(Res.string.content_area_no_open_file))
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(Res.string.content_area_no_open_file), style = MaterialTheme.typography.bodyLarge)
+            }
         } else {
             FlowRow {
                 currentNode.children.forEach { childrenNode ->
