@@ -1,11 +1,12 @@
-This is a Kotlin Multiplatform project targeting Desktop.
+# SevenZipCompose
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - `commonMain` is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    `iosMain` would be the right folder for such calls.
+这是个尝试使用Compose和[sevenzipjbinding](https://github.com/borisbrodski/sevenzipjbinding)实现桌面压缩软件的toy project.
 
+# 特性
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…# SevenZipCompose
+- [x] 压缩文件预览
+- [x] 双击解压到临时目录打开
+- [x] 解压整个压缩包
+- [ ] 创建压缩文件
+- [ ] 修改当前压缩包
+- [ ] 支持密码
