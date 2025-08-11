@@ -4,25 +4,36 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.IInArchive
+import net.sf.sevenzipjbinding.IOutCreateArchiveZip
+import net.sf.sevenzipjbinding.IOutCreateCallback
+import net.sf.sevenzipjbinding.IOutItemZip
 import net.sf.sevenzipjbinding.IProgress
+import net.sf.sevenzipjbinding.ISequentialInStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
+import net.sf.sevenzipjbinding.impl.OutItemFactory
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import top.ntutn.sevenzip.util.ReferenceCounted
 import top.ntutn.sevenzip.util.rememberClose
+import top.ntutn.sevenzip.util.rememberCloseSuspend
 import top.ntutn.sevenzip.util.toReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
 import top.ntutn.sevenzip.zip.ArchiveNodeExtractCallback
+import top.ntutn.sevenzip.zip.CreateZipCallback
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @OptIn(ExperimentalAtomicApi::class)
 class SevenZipViewModel : ViewModel() {
@@ -33,7 +44,7 @@ class SevenZipViewModel : ViewModel() {
     val browsingNode: StateFlow<ArchiveNode?> get() = _browsingNode
 
     suspend fun openArchive(file: File): Boolean = viewModelScope.async(Dispatchers.Default) {
-        val randomAccessFile = RandomAccessFile(file, "r")
+        val randomAccessFile = RandomAccessFile(file, "r") // fixme filenotfound e.g. in trash
         val archive = try {
             SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
         } catch (e: SevenZipException) {
@@ -83,6 +94,28 @@ class SevenZipViewModel : ViewModel() {
         }
         return@async true
     }.await()
+
+    suspend fun createArchive(baseFile: File, files: List<File>, targetFile: File) = viewModelScope.launch {
+        val files = withContext(Dispatchers.IO) {
+            files.flatMap { file -> file.walkTopDown() }
+                .filter { it.isFile }
+                .filter { it.canRead() }
+        }
+        try {
+            val raf = RandomAccessFile(targetFile, "rw")
+            val rafs = RandomAccessFileOutStream(raf)
+            val outArchiveRef = SevenZip.openOutArchiveZip().toReferenceCounted {
+                it.close()
+                rafs.close()
+            }
+            outArchiveRef.rememberCloseSuspend { outArchive ->
+                outArchive.createArchive(rafs, files.size, CreateZipCallback(baseFile, files){})
+            }
+            openArchive(targetFile)
+        } catch (e: SevenZipException) {
+            e.printStackTraceExtended()
+        }
+    }
 
     fun enterFolder(node: ArchiveNode) {
         _browsingNode.value = node

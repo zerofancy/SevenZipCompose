@@ -72,3 +72,11 @@ fun <T, R> ReferenceCounted<T>.rememberClose(block: (T) -> R): R {
         close()
     }
 }
+
+suspend fun <T, R> ReferenceCounted<T>.rememberCloseSuspend(block: suspend (T) -> R): R {
+    return try {
+        block(get())
+    } finally {
+        close()
+    }
+}
