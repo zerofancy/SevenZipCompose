@@ -4,21 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.IInArchive
-import net.sf.sevenzipjbinding.IOutCreateArchiveZip
-import net.sf.sevenzipjbinding.IOutCreateCallback
-import net.sf.sevenzipjbinding.IOutItemZip
 import net.sf.sevenzipjbinding.IProgress
-import net.sf.sevenzipjbinding.ISequentialInStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
-import net.sf.sevenzipjbinding.impl.OutItemFactory
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import top.ntutn.sevenzip.util.ReferenceCounted
@@ -32,8 +26,6 @@ import java.io.File
 import java.io.RandomAccessFile
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 @OptIn(ExperimentalAtomicApi::class)
 class SevenZipViewModel : ViewModel() {
@@ -109,7 +101,9 @@ class SevenZipViewModel : ViewModel() {
                 rafs.close()
             }
             outArchiveRef.rememberCloseSuspend { outArchive ->
-                outArchive.createArchive(rafs, files.size, CreateZipCallback(baseFile, files){})
+                withContext(Dispatchers.IO) {
+                    outArchive.createArchive(rafs, files.size, CreateZipCallback(baseFile, files))
+                }
             }
             openArchive(targetFile)
         } catch (e: SevenZipException) {

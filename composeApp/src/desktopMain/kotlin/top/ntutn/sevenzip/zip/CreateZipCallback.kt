@@ -8,9 +8,8 @@ import net.sf.sevenzipjbinding.impl.OutItemFactory
 import net.sf.sevenzipjbinding.util.ByteArrayStream
 import java.io.File
 
-class CreateZipCallback(private val baseFile: File, private val files: List<File>, private val onResult: (Boolean) -> Unit): IOutCreateCallback<IOutItemZip> {
+class CreateZipCallback(private val baseFile: File, private val files: List<File>): IOutCreateCallback<IOutItemZip> {
     override fun setOperationResult(operationResultOk: Boolean) {
-        onResult(operationResultOk)
     }
 
     override fun getItemInformation(

@@ -16,7 +16,7 @@ import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.dialogs.openFileSaver
-import io.github.vinceglb.filekit.isDirectory
+import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.parent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -105,8 +105,8 @@ fun ToolbarArea(
                     toastController.show(getString(Res.string.toolbar_must_in_same_dir))
                     return@launch
                 }
-                val targetFile = FileKit.openFileSaver("archive", extension = "zip") ?:return@launch
                 val baseFile = files.first().parent() ?: return@launch
+                val targetFile = FileKit.openFileSaver(baseFile.name, extension = "zip") ?:return@launch
                 viewModel.createArchive(baseFile.file, files.map { it.file }, targetFile.file)
             }
         }) {
