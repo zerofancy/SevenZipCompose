@@ -1,6 +1,7 @@
 package top.ntutn.sevenzip
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,6 +52,7 @@ fun main() {
     application {
         var settingOpened by remember { mutableStateOf(false) }
         var aboutOpened by remember { mutableStateOf(false) }
+        var addOpen by remember { mutableStateOf(false) }
         val customDensity by settingDataStore
             .settingData()
             .map { Density(it.density, it.fontScale) }
@@ -82,6 +84,9 @@ fun main() {
                         },
                         onOpenAbout = {
                             aboutOpened = true
+                        },
+                        onOpenAdd = {
+                            addOpen = true
                         }
                     )
                 }
@@ -121,6 +126,18 @@ fun main() {
                         LocalDensity provides customDensity
                     ) {
                         AboutPage()
+                    }
+                }
+            }
+            if (addOpen) {
+                DialogWindow(onCloseRequest = {
+                    addOpen = false
+                }, title = "Add window") {
+                    CompositionLocalProvider(
+                        LocalDensity provides customDensity
+                    ) {
+                        // todo 左右布局，左边是文件夹树，右边是操作集合
+                        Text("Add page")
                     }
                 }
             }

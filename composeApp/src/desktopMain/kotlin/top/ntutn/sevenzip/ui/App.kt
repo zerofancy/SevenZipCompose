@@ -27,6 +27,7 @@ fun App(
     tryUseSystemIcon: Boolean,
     onOpenSetting: () -> Unit = {},
     onOpenAbout: () -> Unit = {},
+    onOpenAdd: () -> Unit = {},
     onOpenFileNameChange: (String?) -> Unit
 ) {
     MaterialTheme {
@@ -47,6 +48,7 @@ fun App(
                     onOpenFileNameChange = onOpenFileNameChange,
                     onOpenSetting = onOpenSetting,
                     onOpenAbout = onOpenAbout,
+                    onOpenAdd = onOpenAdd
                 )
             }
             val scope = rememberCoroutineScope()

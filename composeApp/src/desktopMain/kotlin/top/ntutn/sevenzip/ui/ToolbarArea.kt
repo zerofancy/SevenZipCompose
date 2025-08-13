@@ -51,6 +51,7 @@ fun ToolbarArea(
     onOpenFileNameChange: (String?) -> Unit = {},
     onOpenSetting: () -> Unit = {},
     onOpenAbout: () -> Unit = {},
+    onOpenAdd: () -> Unit = {},
 ) {
     Row(modifier) {
         val scope = rememberCoroutineScope()
@@ -90,6 +91,8 @@ fun ToolbarArea(
         }
         Spacer(modifier = Modifier.size(4.dp))
         TextButton(onClick = {
+            onOpenAdd()
+            return@TextButton
             scope.launch {
                 // todo 这个方式只能选择多个文件，不能选择文件夹
                 val files = FileKit.openFilePicker(
