@@ -32,6 +32,7 @@ import sevenzip.composeapp.generated.resources.title_template
 import top.ntutn.sevenzip.storage.GlobalSettingDataStore
 import top.ntutn.sevenzip.toast.ToastHost
 import top.ntutn.sevenzip.ui.AboutPage
+import top.ntutn.sevenzip.ui.AddPage
 import top.ntutn.sevenzip.ui.App
 import top.ntutn.sevenzip.ui.SettingPage
 
@@ -132,12 +133,11 @@ fun main() {
             if (addOpen) {
                 DialogWindow(onCloseRequest = {
                     addOpen = false
-                }, title = "Add window") {
+                }, title = "创建归档") {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
                     ) {
-                        // todo 左右布局，左边是文件夹树，右边是操作集合
-                        Text("Add page")
+                        AddPage()
                     }
                 }
             }
