@@ -10,9 +10,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberDialogState
+import androidx.compose.ui.window.rememberWindowState
 import io.github.vinceglb.filekit.FileKit
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -66,7 +70,8 @@ fun main() {
         Window(
             onCloseRequest = ::exitApplication,
             title = windowTitle,
-            icon = painterResource(Res.drawable.icon)
+            icon = painterResource(Res.drawable.icon),
+            state = rememberWindowState(size = DpSize(1024.dp, 768.dp))
         ) {
             val tryUseSystemIcon by settingDataStore.settingData()
                 .map { it.tryUseSystemIcon }
@@ -95,7 +100,8 @@ fun main() {
             if (settingOpened) {
                 DialogWindow(
                     onCloseRequest = { settingOpened = false },
-                    title = stringResource(Res.string.setting_window_title)
+                    title = stringResource(Res.string.setting_window_title),
+                    state = rememberDialogState(size = DpSize(800.dp, 600.dp)),
                 ) {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
@@ -120,9 +126,13 @@ fun main() {
                 }
             }
             if (aboutOpened) {
-                DialogWindow(onCloseRequest = {
-                    aboutOpened = false
-                }, title = stringResource(Res.string.about_window_title)) {
+                DialogWindow(
+                    onCloseRequest = {
+                        aboutOpened = false
+                    },
+                    title = stringResource(Res.string.about_window_title),
+                    state = rememberDialogState(size = DpSize(800.dp, 600.dp))
+                ) {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
                     ) {
@@ -131,9 +141,13 @@ fun main() {
                 }
             }
             if (addOpen) {
-                DialogWindow(onCloseRequest = {
-                    addOpen = false
-                }, title = stringResource(Res.string.new_window_title)) {
+                DialogWindow(
+                    onCloseRequest = {
+                        addOpen = false
+                    },
+                    title = stringResource(Res.string.new_window_title),
+                    state = rememberDialogState(size = DpSize(800.dp, 600.dp))
+                ) {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
                     ) {

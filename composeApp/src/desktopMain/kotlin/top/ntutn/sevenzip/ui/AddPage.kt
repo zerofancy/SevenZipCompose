@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
@@ -41,7 +42,7 @@ fun AddPage(modifier: Modifier = Modifier) {
             }
         }
         var currentNode by remember { mutableStateOf(rootArchiveNode) }
-        Box(modifier = Modifier.fillMaxHeight().weight(1f)) { // 左边布局，文件区域
+        Box(modifier = Modifier.fillMaxHeight().weight(1f), contentAlignment = Alignment.Center) { // 左边布局，文件区域
             if (currentNode == rootArchiveNode) {
                 Text(stringResource(Res.string.new_window_empty_tip))
             } else {
