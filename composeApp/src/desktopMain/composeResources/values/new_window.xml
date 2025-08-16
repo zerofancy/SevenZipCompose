@@ -1,0 +1,10 @@
+<resources>
+    <string name="new_window_title">创建归档</string>
+    <string name="new_window_empty_tip">在这里显示已经添加的文件</string>
+
+    <string name="new_window_upward_button">上级目录</string>
+    <string name="new_window_add_file_button">添加文件</string>
+    <string name="new_window_add_folder_button">添加目录</string>
+    <string name="new_window_create_folder_button">创建目录</string>
+    <string name="new_window_create_archive">创建归档</string>
+</resources>

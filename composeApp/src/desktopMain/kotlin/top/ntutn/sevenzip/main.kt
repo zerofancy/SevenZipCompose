@@ -1,7 +1,6 @@
 package top.ntutn.sevenzip
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,6 +26,7 @@ import sevenzip.composeapp.generated.resources.Res
 import sevenzip.composeapp.generated.resources.about_window_title
 import sevenzip.composeapp.generated.resources.app_name
 import sevenzip.composeapp.generated.resources.icon
+import sevenzip.composeapp.generated.resources.new_window_title
 import sevenzip.composeapp.generated.resources.setting_window_title
 import sevenzip.composeapp.generated.resources.title_template
 import top.ntutn.sevenzip.storage.GlobalSettingDataStore
@@ -133,7 +133,7 @@ fun main() {
             if (addOpen) {
                 DialogWindow(onCloseRequest = {
                     addOpen = false
-                }, title = "创建归档") {
+                }, title = stringResource(Res.string.new_window_title)) {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
                     ) {

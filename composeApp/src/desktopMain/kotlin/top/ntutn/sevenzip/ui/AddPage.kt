@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,6 +22,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import sevenzip.composeapp.generated.resources.Res
+import sevenzip.composeapp.generated.resources.new_window_add_file_button
+import sevenzip.composeapp.generated.resources.new_window_add_folder_button
+import sevenzip.composeapp.generated.resources.new_window_create_archive
+import sevenzip.composeapp.generated.resources.new_window_empty_tip
+import sevenzip.composeapp.generated.resources.new_window_upward_button
 import top.ntutn.sevenzip.zip.ArchiveNode
 
 @Composable
@@ -35,7 +43,7 @@ fun AddPage(modifier: Modifier = Modifier) {
         var currentNode by remember { mutableStateOf(rootArchiveNode) }
         Box(modifier = Modifier.fillMaxHeight().weight(1f)) { // 左边布局，文件区域
             if (currentNode == rootArchiveNode) {
-                Text("在这里显示已经添加的文件")
+                Text(stringResource(Res.string.new_window_empty_tip))
             } else {
                 ContentArea(
                     currentNode = currentNode,
@@ -55,24 +63,32 @@ fun AddPage(modifier: Modifier = Modifier) {
                 tonalElevation = 4.dp
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center) {
-                    OutlinedButton(onClick = { currentNode = currentNode.parent ?: rootArchiveNode }, enabled = currentNode != rootArchiveNode) {
-                        Text("上级目录")
+                    OutlinedButton(
+                        onClick = { currentNode = currentNode.parent ?: rootArchiveNode },
+                        enabled = currentNode != rootArchiveNode,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(Res.string.new_window_upward_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))
-                    OutlinedButton(onClick = { TODO() }) {
-                        Text("添加文件")
+                    OutlinedButton(onClick = { TODO() }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(Res.string.new_window_add_file_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))
-                    OutlinedButton(onClick = { TODO() }) {
-                        Text("添加目录")
+                    OutlinedButton(onClick = { TODO() }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(Res.string.new_window_add_folder_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))
-                    OutlinedButton(onClick = { TODO() }) {
-                        Text("创建目录")
+                    OutlinedButton(onClick = { TODO() }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(Res.string.new_window_add_folder_button))
                     }
                     Spacer(modifier = Modifier.size(32.dp))
-                    Button(onClick = { TODO() }, enabled = currentNode != rootArchiveNode || currentNode.children.isNotEmpty()) {
-                        Text("创建归档")
+                    Button(
+                        onClick = { TODO() },
+                        enabled = currentNode != rootArchiveNode || currentNode.children.isNotEmpty(),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(Res.string.new_window_create_archive))
                     }
                 }
             }
