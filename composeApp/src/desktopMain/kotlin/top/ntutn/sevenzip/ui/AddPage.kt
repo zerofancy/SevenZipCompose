@@ -33,6 +33,7 @@ import sevenzip.composeapp.generated.resources.Res
 import sevenzip.composeapp.generated.resources.new_window_add_file_button
 import sevenzip.composeapp.generated.resources.new_window_add_folder_button
 import sevenzip.composeapp.generated.resources.new_window_create_archive
+import sevenzip.composeapp.generated.resources.new_window_create_folder_button
 import sevenzip.composeapp.generated.resources.new_window_empty_tip
 import sevenzip.composeapp.generated.resources.new_window_invalid_filename_tip
 import sevenzip.composeapp.generated.resources.new_window_upward_button
@@ -109,7 +110,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                     }
                     Spacer(modifier = Modifier.size(8.dp))
                     OutlinedButton(onClick = { TODO() }, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(Res.string.new_window_add_folder_button))
+                        Text(stringResource(Res.string.new_window_create_folder_button))
                     }
                     Spacer(modifier = Modifier.size(32.dp))
                     Button(
