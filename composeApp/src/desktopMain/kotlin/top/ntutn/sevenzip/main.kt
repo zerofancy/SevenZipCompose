@@ -151,7 +151,9 @@ fun main() {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
                     ) {
-                        AddPage()
+                        ToastHost {
+                            AddPage()
+                        }
                     }
                 }
             }

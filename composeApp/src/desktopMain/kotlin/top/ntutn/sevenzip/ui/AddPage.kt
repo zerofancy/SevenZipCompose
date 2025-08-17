@@ -19,17 +19,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import sevenzip.composeapp.generated.resources.Res
 import sevenzip.composeapp.generated.resources.new_window_add_file_button
 import sevenzip.composeapp.generated.resources.new_window_add_folder_button
 import sevenzip.composeapp.generated.resources.new_window_create_archive
 import sevenzip.composeapp.generated.resources.new_window_empty_tip
+import sevenzip.composeapp.generated.resources.new_window_invalid_filename_tip
 import sevenzip.composeapp.generated.resources.new_window_upward_button
+import top.ntutn.sevenzip.toast.LocalToastController
+import top.ntutn.sevenzip.util.toReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
 
 @Composable
@@ -41,17 +49,18 @@ fun AddPage(modifier: Modifier = Modifier) {
                 it.isDir = true
             }
         }
-        var currentNode by remember { mutableStateOf(rootArchiveNode) }
+        var currentNodeRef by remember { mutableStateOf(rootArchiveNode.toReferenceCounted {  }) }
+        val currentNode = currentNodeRef.get()
         Box(modifier = Modifier.fillMaxHeight().weight(1f), contentAlignment = Alignment.Center) { // 左边布局，文件区域
-            if (currentNode == rootArchiveNode) {
+            if (currentNode == rootArchiveNode && currentNode.children.isEmpty()) {
                 Text(stringResource(Res.string.new_window_empty_tip))
             } else {
                 ContentArea(
-                    currentNode = currentNode,
+                    currentNode = currentNodeRef,
                     tryUseSystemIcon = true,
                     onAccessNode = {
                         if (it.isDir) {
-                            currentNode = it
+                            currentNodeRef = it.toReferenceCounted {  }
                         }
                     }
                 )
@@ -64,15 +73,34 @@ fun AddPage(modifier: Modifier = Modifier) {
                 tonalElevation = 4.dp
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center) {
+                    val scope = rememberCoroutineScope()
+                    val toastController = LocalToastController.current
+
                     OutlinedButton(
-                        onClick = { currentNode = currentNode.parent ?: rootArchiveNode },
+                        onClick = { currentNodeRef = (currentNode.parent ?: rootArchiveNode).toReferenceCounted {  } },
                         enabled = currentNode != rootArchiveNode,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(stringResource(Res.string.new_window_upward_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))
-                    OutlinedButton(onClick = { TODO() }, modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = {
+                        scope.launch {
+                            val file = FileKit.openFilePicker()?.file ?: return@launch
+                            val node = currentNode
+                            val hasSameFile = node.children.find { node -> node.name == file.name } != null
+                            if (hasSameFile) {
+                                toastController.show(getString(Res.string.new_window_invalid_filename_tip))
+                                return@launch
+                            }
+                            node.children.add(ArchiveNode().also {
+                                it.name = file.name
+                                it.isDir = false
+                                it.originFile = file
+                            })
+                            currentNodeRef = node.toReferenceCounted {  }
+                        }
+                    }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.new_window_add_file_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))

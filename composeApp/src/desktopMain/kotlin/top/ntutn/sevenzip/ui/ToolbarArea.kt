@@ -41,12 +41,13 @@ import sevenzip.composeapp.generated.resources.toolbar_setting
 import sevenzip.composeapp.generated.resources.toolbar_upward
 import top.ntutn.sevenzip.SevenZipViewModel
 import top.ntutn.sevenzip.toast.LocalToastController
+import top.ntutn.sevenzip.util.ReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
 
 @Composable
 fun ToolbarArea(
     viewModel: SevenZipViewModel,
-    currentNode: ArchiveNode?,
+    currentNode: ReferenceCounted<ArchiveNode>?,
     modifier: Modifier = Modifier.Companion,
     onOpenFileNameChange: (String?) -> Unit = {},
     onOpenSetting: () -> Unit = {},
@@ -59,7 +60,7 @@ fun ToolbarArea(
 
         TextButton(onClick = {
             viewModel.moveBack()
-        }, enabled = currentNode?.parent != null) {
+        }, enabled = currentNode?.get()?.parent != null) {
             Icon(painterResource(Res.drawable.tool_upward), contentDescription = stringResource(Res.string.toolbar_upward))
             Spacer(modifier = Modifier.width(2.dp))
             Text(stringResource(Res.string.toolbar_upward))

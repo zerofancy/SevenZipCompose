@@ -32,8 +32,10 @@ class SevenZipViewModel : ViewModel() {
     private val archiveRef = AtomicReference<ReferenceCounted<IInArchive>?>(null)
 
     private var archiveTree = ArchiveNode()
-    private val _browsingNode = MutableStateFlow<ArchiveNode?>(null)
-    val browsingNode: StateFlow<ArchiveNode?> get() = _browsingNode
+
+    // 当前正在浏览的结点。这里不需要释放资源，但需要一个包装类来让Compose识别到引用变化
+    private val _browsingNode = MutableStateFlow<ReferenceCounted<ArchiveNode>?>(null)
+    val browsingNode: StateFlow<ReferenceCounted<ArchiveNode>?> get() = _browsingNode
 
     suspend fun openArchive(file: File): Boolean = viewModelScope.async(Dispatchers.Default) {
         val randomAccessFile = RandomAccessFile(file, "r") // fixme filenotfound e.g. in trash
@@ -82,12 +84,12 @@ class SevenZipViewModel : ViewModel() {
             }
             print(archiveTree.printTree())
             this@SevenZipViewModel.archiveTree = archiveTree
-            this@SevenZipViewModel._browsingNode.value = archiveTree
+            this@SevenZipViewModel._browsingNode.value = archiveTree.toReferenceCounted {  }
         }
         return@async true
     }.await()
 
-    suspend fun createArchive(baseFile: File, files: List<File>, targetFile: File) = viewModelScope.launch {
+    fun createArchive(baseFile: File, files: List<File>, targetFile: File) = viewModelScope.launch {
         val files = withContext(Dispatchers.IO) {
             files.flatMap { file -> file.walkTopDown() }
                 .filter { it.isFile }
@@ -112,7 +114,7 @@ class SevenZipViewModel : ViewModel() {
     }
 
     fun enterFolder(node: ArchiveNode) {
-        _browsingNode.value = node
+        _browsingNode.value = node.toReferenceCounted {  }
     }
 
     suspend fun extract2Temp(node: ArchiveNode): File? = withContext(Dispatchers.IO) {
@@ -153,7 +155,7 @@ class SevenZipViewModel : ViewModel() {
     }
 
     fun moveBack() {
-        val parentNode = _browsingNode.value?.parent
+        val parentNode = _browsingNode.value?.get()?.parent?.toReferenceCounted {  }
         if (parentNode != null) {
             _browsingNode.value = parentNode
         }

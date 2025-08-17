@@ -30,6 +30,9 @@ class ArchiveNode {
             }.also { _extension = it }
         }
 
+    // 该node的原始文件路径，仅在创建压缩文件时有用
+    var originFile: File? = null
+
     fun relativePath(): String {
         val p = parent ?: return name
         p.parent ?: return name // 直接属于根节点

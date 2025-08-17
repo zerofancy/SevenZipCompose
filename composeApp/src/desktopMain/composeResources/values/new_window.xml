@@ -7,4 +7,6 @@
     <string name="new_window_add_folder_button">添加目录</string>
     <string name="new_window_create_folder_button">创建目录</string>
     <string name="new_window_create_archive">创建归档</string>
+
+    <string name="new_window_invalid_filename_tip">文件名无效</string>
 </resources>

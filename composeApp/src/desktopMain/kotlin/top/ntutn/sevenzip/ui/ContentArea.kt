@@ -11,7 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.ModalDrawer
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,11 +32,12 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import sevenzip.composeapp.generated.resources.Res
 import sevenzip.composeapp.generated.resources.content_area_no_open_file
+import top.ntutn.sevenzip.util.ReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
 
 @Composable
 fun ContentArea(
-    currentNode: ArchiveNode?,
+    currentNode: ReferenceCounted<ArchiveNode>?,
     tryUseSystemIcon: Boolean,
     modifier: Modifier = Modifier,
     onAccessNode: (ArchiveNode) -> Unit = {}
@@ -46,8 +48,10 @@ fun ContentArea(
                 Text(stringResource(Res.string.content_area_no_open_file), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
-            FlowRow {
-                currentNode.children.forEach { childrenNode ->
+            FlowRow(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                currentNode.get().children.forEach { childrenNode ->
                     SingleFileIcon(childrenNode, tryUseSystemIcon, onDoubleClick = {
                         onAccessNode(childrenNode)
                     })
