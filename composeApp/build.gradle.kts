@@ -66,6 +66,11 @@ compose.desktop {
             packageName = "top.ntutn.sevenzip"
             packageVersion = "1.0.0"
 
+            windows {
+                iconFile.set(project.file("icon.ico"))
+                menuGroup = "ntutn"
+                upgradeUuid = "108355cb-dd6e-4cfa-b76b-312c61898502"
+            }
             linux {
                 iconFile.set(project.file("icon.png"))
             }
