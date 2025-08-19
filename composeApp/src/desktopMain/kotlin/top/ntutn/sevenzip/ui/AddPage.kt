@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -97,6 +98,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                             node.children.add(ArchiveNode().also {
                                 it.name = file.name
                                 it.isDir = false
+                                it.parent = node
                                 it.originFile = file
                             })
                             currentNodeRef = node.toReferenceCounted {  }
@@ -105,7 +107,46 @@ fun AddPage(modifier: Modifier = Modifier) {
                         Text(stringResource(Res.string.new_window_add_file_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))
-                    OutlinedButton(onClick = { TODO() }, modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = {
+                        scope.launch {
+                            val rootFile = FileKit.openDirectoryPicker()?.file ?: return@launch
+                            val rootNode = ArchiveNode().also {
+                                it.name = rootFile.name
+                                it.isDir = true
+                            }
+                            var buildingDirNode = rootNode
+                            rootFile.walkTopDown().onEnter { dir ->
+                                if (dir == rootFile) {
+                                    // rootNode已经创建，不需要再次创建
+                                    return@onEnter true
+                                }
+                                val node = ArchiveNode().also {
+                                    it.name = dir.name
+                                    it.isDir = true
+                                    it.parent = buildingDirNode
+                                }
+                                buildingDirNode.children.add(node)
+                                buildingDirNode = node
+                                true
+                            }.onLeave { dir ->
+                                buildingDirNode = buildingDirNode.parent ?: rootNode
+                            }.onEach { file ->
+                                if (file.isDirectory) {
+                                    return@onEach
+                                }
+                                buildingDirNode.children.add(ArchiveNode().also {
+                                    it.name = file.name
+                                    it.isDir = false
+                                    it.parent = buildingDirNode
+                                    it.originFile = file
+                                })
+                            }.toList()
+
+                            val node = currentNode
+                            node.children.add(rootNode)
+                            currentNodeRef = node.toReferenceCounted {  }
+                        }
+                    }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.new_window_add_folder_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))
