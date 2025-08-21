@@ -1,27 +1,34 @@
 package top.ntutn.sevenzip.toast
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowDecoration
+import androidx.compose.ui.window.rememberWindowState
+import kotlinx.coroutines.delay
+import java.awt.Window
 
 val LocalToastController = staticCompositionLocalOf<IToastController> {
     error("No ToastController Provided. Make sure to wrap your app with ToastHost.")
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ToastHost(content: @Composable () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
@@ -29,23 +36,51 @@ fun ToastHost(content: @Composable () -> Unit) {
         DefaultToastController(coroutineScope)
     }
 
+    // 获取主窗口引用（当前活跃窗口）
+    val mainWindow = remember {
+        Window.getWindows().firstOrNull { it.isVisible && it.isActive }
+    }
+
     CompositionLocalProvider(LocalToastController provides controller) {
         content()
 
-        val messages by remember { derivedStateOf { controller.getMessages() }}
+        val messages by remember { derivedStateOf { controller.getMessages() } }
 
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            messages.forEachIndexed { index, message ->
+        messages.forEachIndexed { index, message ->
+            val windowState = rememberWindowState(
+                size = DpSize(Dp.Unspecified, Dp.Unspecified)
+            )
+            Window(
+                onCloseRequest = {},
+                state = windowState,
+                decoration = WindowDecoration.Undecorated(),
+                alwaysOnTop = true,
+                focusable = false,
+                transparent = true,
+                resizable = false,
+                enabled = true, // 改回true，确保窗口能正常显示
+            ) {
+                // 关键：设置Toast窗口位置在主窗口底部
+                LaunchedEffect(mainWindow) {
+                    mainWindow?.let { parentWindow ->
+                        // 等待窗口初始化完成
+                        delay(10)
+
+                        // 计算位置：主窗口底部中心，距离底部24dp
+                        val toastWidth = window.width
+                        val x = parentWindow.x + (parentWindow.width / 2) - (toastWidth / 2)
+                        val y = parentWindow.y + parentWindow.height - 80 - (index * 60) // 多个Toast时向上堆叠
+
+                        window.setLocation(x, y)
+                    }
+                }
+
                 Surface(
                     shape = MaterialTheme.shapes.medium,
                     color = Color.Black.copy(alpha = 0.7f),
                     tonalElevation = 16.dp,
                     shadowElevation = 16.dp,
                     modifier = Modifier
-                        .padding(bottom = 24.dp + 48.dp * index)
                 ) {
                     Text(
                         text = message.text,
