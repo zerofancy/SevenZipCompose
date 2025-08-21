@@ -21,9 +21,10 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowDecoration
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.delay
-import java.awt.Window
 
 val LocalToastController = staticCompositionLocalOf<IToastController> {
     error("No ToastController Provided. Make sure to wrap your app with ToastHost.")
@@ -31,16 +32,14 @@ val LocalToastController = staticCompositionLocalOf<IToastController> {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ToastHost(content: @Composable () -> Unit) {
+fun WindowScope.ToastHost(content: @Composable () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val controller = remember(coroutineScope) {
         DefaultToastController(coroutineScope)
     }
 
     // 获取主窗口引用（当前活跃窗口）
-    val mainWindow = remember {
-        Window.getWindows().firstOrNull { it.isVisible && it.isActive }
-    }
+    val mainWindow = window
 
     CompositionLocalProvider(LocalToastController provides controller) {
         content()
@@ -60,20 +59,19 @@ fun ToastHost(content: @Composable () -> Unit) {
                 focusable = false,
                 transparent = true,
                 resizable = false,
-                enabled = true, // 改回true，确保窗口能正常显示
+                enabled = true,
             ) {
-                // 关键：设置Toast窗口位置在主窗口底部
+                // 设置Toast窗口位置在主窗口底部
                 LaunchedEffect(mainWindow) {
-                    mainWindow?.let { parentWindow ->
+                    mainWindow.let { parentWindow ->
                         // 等待窗口初始化完成
                         delay(10)
 
                         // 计算位置：主窗口底部中心，距离底部24dp
-                        val toastWidth = window.width
-                        val x = parentWindow.x + (parentWindow.width / 2) - (toastWidth / 2)
-                        val y = parentWindow.y + parentWindow.height - 80 - (index * 60) // 多个Toast时向上堆叠
-
-                        window.setLocation(x, y)
+                        // 计算目标位置（转换为Dp单位）
+                        val targetX = parentWindow.x.dp + (parentWindow.width.dp / 2) - (windowState.size.width / 2)
+                        val targetY = parentWindow.y.dp + parentWindow.height.dp - 80.dp - (index * 60).dp
+                        windowState.position = WindowPosition(targetX, targetY)
                     }
                 }
 
