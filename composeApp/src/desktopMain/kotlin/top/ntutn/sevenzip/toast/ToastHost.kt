@@ -15,6 +15,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -50,6 +51,7 @@ fun ToastHost(content: @Composable () -> Unit) {
             val windowState = rememberWindowState(
                 size = DpSize(Dp.Unspecified, Dp.Unspecified)
             )
+            val density = LocalDensity.current
             Window(
                 onCloseRequest = {},
                 state = windowState,
@@ -75,19 +77,23 @@ fun ToastHost(content: @Composable () -> Unit) {
                     }
                 }
 
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = Color.Black.copy(alpha = 0.7f),
-                    tonalElevation = 16.dp,
-                    shadowElevation = 16.dp,
-                    modifier = Modifier
+                CompositionLocalProvider(
+                    LocalDensity provides density
                 ) {
-                    Text(
-                        text = message.text,
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = Color.Black.copy(alpha = 0.7f),
+                        tonalElevation = 16.dp,
+                        shadowElevation = 16.dp,
+                        modifier = Modifier
+                    ) {
+                        Text(
+                            text = message.text,
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
                 }
             }
         }
