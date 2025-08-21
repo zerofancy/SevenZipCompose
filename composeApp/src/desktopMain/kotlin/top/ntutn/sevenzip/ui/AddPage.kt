@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +41,7 @@ import sevenzip.composeapp.generated.resources.new_window_empty_tip
 import sevenzip.composeapp.generated.resources.new_window_invalid_filename_tip
 import sevenzip.composeapp.generated.resources.new_window_upward_button
 import top.ntutn.sevenzip.toast.LocalToastController
+import top.ntutn.sevenzip.util.UniversalFileNameValidator
 import top.ntutn.sevenzip.util.toReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
 
@@ -51,9 +54,12 @@ fun AddPage(modifier: Modifier = Modifier) {
                 it.isDir = true
             }
         }
-        var currentNodeRef by remember { mutableStateOf(rootArchiveNode.toReferenceCounted {  }) }
+        var currentNodeRef by remember { mutableStateOf(rootArchiveNode.toReferenceCounted { }) }
         val currentNode = currentNodeRef.get()
-        Box(modifier = Modifier.fillMaxHeight().weight(1f), contentAlignment = Alignment.Center) { // 左边布局，文件区域
+        Box(
+            modifier = Modifier.fillMaxHeight().weight(1f),
+            contentAlignment = Alignment.Center
+        ) { // 左边布局，文件区域
             if (currentNode == rootArchiveNode && currentNode.children.isEmpty()) {
                 Text(stringResource(Res.string.new_window_empty_tip))
             } else {
@@ -62,7 +68,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                     tryUseSystemIcon = true,
                     onAccessNode = {
                         if (it.isDir) {
-                            currentNodeRef = it.toReferenceCounted {  }
+                            currentNodeRef = it.toReferenceCounted { }
                         }
                     }
                 )
@@ -74,12 +80,18 @@ fun AddPage(modifier: Modifier = Modifier) {
                 shadowElevation = 4.dp,
                 tonalElevation = 4.dp
             ) {
-                Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
                     val scope = rememberCoroutineScope()
                     val toastController = LocalToastController.current
 
                     OutlinedButton(
-                        onClick = { currentNodeRef = (currentNode.parent ?: rootArchiveNode).toReferenceCounted {  } },
+                        onClick = {
+                            currentNodeRef =
+                                (currentNode.parent ?: rootArchiveNode).toReferenceCounted { }
+                        },
                         enabled = currentNode != rootArchiveNode,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -90,7 +102,8 @@ fun AddPage(modifier: Modifier = Modifier) {
                         scope.launch {
                             val file = FileKit.openFilePicker()?.file ?: return@launch
                             val node = currentNode
-                            val hasSameFile = node.children.find { node -> node.name == file.name } != null
+                            val hasSameFile =
+                                node.children.find { node -> node.name == file.name } != null
                             if (hasSameFile) {
                                 toastController.show(getString(Res.string.new_window_invalid_filename_tip))
                                 return@launch
@@ -101,7 +114,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                                 it.parent = node
                                 it.originFile = file
                             })
-                            currentNodeRef = node.toReferenceCounted {  }
+                            currentNodeRef = node.toReferenceCounted { }
                         }
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.new_window_add_file_button))
@@ -144,13 +157,66 @@ fun AddPage(modifier: Modifier = Modifier) {
 
                             val node = currentNode
                             node.children.add(rootNode)
-                            currentNodeRef = node.toReferenceCounted {  }
+                            currentNodeRef = node.toReferenceCounted { }
                         }
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.new_window_add_folder_button))
                     }
                     Spacer(modifier = Modifier.size(8.dp))
-                    OutlinedButton(onClick = { TODO() }, modifier = Modifier.fillMaxWidth()) {
+                    var inputtingDirName by remember { mutableStateOf(false) }
+                    if (inputtingDirName) {
+                        var inputtingName by remember { mutableStateOf("") }
+                        AlertDialog(onDismissRequest = {
+                            inputtingDirName = false
+                        }, confirmButton = {
+                            Button(onClick = {
+                                // 1. 检查文件名是否重复 todo 是否大小写敏感
+                                val hasSame =
+                                    currentNode.children.any { node -> node.name == inputtingName }
+                                if (hasSame) {
+                                    toastController.show("文件名重复") // fixme toast在AlertDialog下面，看不到
+                                    return@Button
+                                }
+
+                                // 2. 检查文件名是否合法
+                                if (!UniversalFileNameValidator.isFileNameValidForAllPlatforms(
+                                        inputtingName
+                                )) {
+                                    toastController.show("文件名不合法")
+                                    return@Button
+                                }
+
+                                // 3. 创建目录
+                                val newNode = ArchiveNode().also {
+                                    it.name = inputtingName
+                                    it.isDir = true
+                                    it.parent = currentNode
+                                }
+                                currentNode.children.add(newNode)
+                                currentNodeRef = currentNode.toReferenceCounted {  }
+
+                                // 4. 关闭窗口
+                                inputtingDirName = false
+                            }) {
+                                Text("确定")
+                            }
+                        }, dismissButton = {
+                            OutlinedButton(onClick = {
+                                inputtingDirName = false
+                            }) {
+                                Text("取消")
+                            }
+                        }, title = {
+                            Text("创建目录")
+                        }, text = {
+                            TextField(value = inputtingName, onValueChange = {
+                                inputtingName = it
+                            })
+                        })
+                    }
+                    OutlinedButton(onClick = {
+                        inputtingDirName = true
+                    }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.new_window_create_folder_button))
                     }
                     Spacer(modifier = Modifier.size(32.dp))
