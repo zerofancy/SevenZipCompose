@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -80,7 +79,7 @@ fun main() {
             CompositionLocalProvider(
                 LocalDensity provides customDensity
             ) {
-                ToastHost {
+                ToastHost({
                     App(
                         tryUseSystemIcon = tryUseSystemIcon,
                         onOpenSetting = {
@@ -96,7 +95,7 @@ fun main() {
                             addOpen = true
                         }
                     )
-                }
+                })
             }
             if (settingOpened) {
                 DialogWindow(
@@ -152,9 +151,9 @@ fun main() {
                     CompositionLocalProvider(
                         LocalDensity provides customDensity
                     ) {
-                        ToastHost {
+                        ToastHost({
                             AddPage()
-                        }
+                        })
                     }
                 }
             }
