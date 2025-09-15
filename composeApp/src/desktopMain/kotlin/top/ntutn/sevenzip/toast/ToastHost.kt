@@ -6,11 +6,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import com.dokar.sonner.Toaster
+import com.dokar.sonner.ToasterState
 import com.dokar.sonner.rememberToasterState
 
+@Deprecated("Use LocalToaster instead.")
 val LocalToastController = staticCompositionLocalOf<IToastController> {
     error("No ToastController Provided. Make sure to wrap your app with ToastHost.")
 }
+
+val LocalToaster = staticCompositionLocalOf<ToasterState> { error("No ToasterState Provided. Make sure to wrap your app with ToastHost.") }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -20,8 +24,10 @@ fun ToastHost(content: @Composable () -> Unit) {
     val controller = remember(toaster) { SonnerToastController(toaster) }
 
     CompositionLocalProvider(LocalToastController provides controller) {
-        content()
+        CompositionLocalProvider(LocalToaster provides toaster) {
+            content()
 
-        Toaster(state = toaster)
+            Toaster(state = toaster)
+        }
     }
 }
