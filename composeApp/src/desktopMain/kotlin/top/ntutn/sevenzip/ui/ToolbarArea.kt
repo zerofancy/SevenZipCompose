@@ -40,7 +40,7 @@ import sevenzip.composeapp.generated.resources.toolbar_open_failed
 import sevenzip.composeapp.generated.resources.toolbar_setting
 import sevenzip.composeapp.generated.resources.toolbar_upward
 import top.ntutn.sevenzip.SevenZipViewModel
-import top.ntutn.sevenzip.toast.LocalToastController
+import top.ntutn.sevenzip.toast.LocalToaster
 import top.ntutn.sevenzip.util.ReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
 
@@ -56,7 +56,7 @@ fun ToolbarArea(
 ) {
     Row(modifier) {
         val scope = rememberCoroutineScope()
-        val toastController = LocalToastController.current
+        val toaster = LocalToaster.current
 
         TextButton(onClick = {
             viewModel.moveBack()
@@ -82,7 +82,7 @@ fun ToolbarArea(
                 if (viewModel.openArchive(kitFile)) {
                     onOpenFileNameChange(kitFile.name)
                 } else {
-                    toastController.show(getString(Res.string.toolbar_open_failed))
+                    toaster.show(getString(Res.string.toolbar_open_failed))
                 }
             }
         }) {
@@ -106,7 +106,7 @@ fun ToolbarArea(
                     files.all { it.parent() == files.first().parent() }
                 }
                 if (!inSameDir) {
-                    toastController.show(getString(Res.string.toolbar_must_in_same_dir))
+                    toaster.show(getString(Res.string.toolbar_must_in_same_dir))
                     return@launch
                 }
                 val baseFile = files.first().parent() ?: return@launch

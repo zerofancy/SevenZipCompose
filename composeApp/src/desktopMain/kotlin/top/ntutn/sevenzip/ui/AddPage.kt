@@ -40,7 +40,7 @@ import sevenzip.composeapp.generated.resources.new_window_create_folder_button
 import sevenzip.composeapp.generated.resources.new_window_empty_tip
 import sevenzip.composeapp.generated.resources.new_window_invalid_filename_tip
 import sevenzip.composeapp.generated.resources.new_window_upward_button
-import top.ntutn.sevenzip.toast.LocalToastController
+import top.ntutn.sevenzip.toast.LocalToaster
 import top.ntutn.sevenzip.util.UniversalFileNameValidator
 import top.ntutn.sevenzip.util.toReferenceCounted
 import top.ntutn.sevenzip.zip.ArchiveNode
@@ -85,7 +85,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                     verticalArrangement = Arrangement.Center
                 ) {
                     val scope = rememberCoroutineScope()
-                    val toastController = LocalToastController.current
+                    val toaster = LocalToaster.current
 
                     OutlinedButton(
                         onClick = {
@@ -105,7 +105,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                             val hasSameFile =
                                 node.children.find { node -> node.name == file.name } != null
                             if (hasSameFile) {
-                                toastController.show(getString(Res.string.new_window_invalid_filename_tip))
+                                toaster.show(getString(Res.string.new_window_invalid_filename_tip))
                                 return@launch
                             }
                             node.children.add(ArchiveNode().also {
@@ -174,7 +174,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                                 val hasSame =
                                     currentNode.children.any { node -> node.name == inputtingName }
                                 if (hasSame) {
-                                    toastController.show("文件名重复") // fixme toast在AlertDialog下面，看不到
+                                    toaster.show("文件名重复")
                                     return@Button
                                 }
 
@@ -182,7 +182,7 @@ fun AddPage(modifier: Modifier = Modifier) {
                                 if (!UniversalFileNameValidator.isFileNameValidForAllPlatforms(
                                         inputtingName
                                 )) {
-                                    toastController.show("文件名不合法")
+                                    toaster.show("文件名不合法")
                                     return@Button
                                 }
 
